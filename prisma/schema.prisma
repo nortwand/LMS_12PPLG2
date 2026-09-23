@@ -1,0 +1,323 @@
+datasource db {
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  KEPSEK
+  KURIKULUM
+  GURU
+  SISWA
+}
+
+enum TipeAsesmen {
+  KUIS
+  UJIAN
+}
+
+enum StatusAsesmen {
+  PROSES
+  SELESAI
+}
+
+enum TipeSoal {
+  PILIHAN_GANDA
+  CHECKBOX
+  ESSAY
+}
+
+enum StatusLaporan {
+  PENDING
+  DITERIMA
+  DITOLAK
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String
+  passwordSementara Boolean   @default(true)
+  role              Role
+  nama              String
+  nik               String?   @unique
+  nis               String?   @unique
+  jenisKelamin      String?
+  tanggalLahir      DateTime?
+  fotoProfil        String?
+  deskripsi         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  kelasReferensiId  String?
+  kelasReferensi    KelasReferensi? @relation(fields: [kelasReferensiId], references: [id])
+  kelasSiswa        KelasSiswa[]
+  kelasGuruMapel    KelasGuruMapel[]
+  materiDibuat      Materi[]
+  asesmenDibuat     Asesmen[]
+  pengumumanDibuat  Pengumuman[]
+  submission        Submission[]
+  tugasDibuat       Tugas[]
+  tugasSubmission   TugasSubmission[]
+  laporanReset      LaporanResetPassword[]
+}
+
+model Jurusan {
+  id              String @id @default(cuid())
+  nama            String @unique
+  kelasReferensi  KelasReferensi[]
+}
+
+model KelasReferensi {
+  id        String   @id @default(cuid())
+  label     String   @unique
+  jenjang   String
+  tingkat   Int?
+  jurusanId String?
+  jurusan   Jurusan? @relation(fields: [jurusanId], references: [id])
+  siswa     User[]
+}
+
+model Kelas {
+  id          String   @id @default(cuid())
+  judul       String
+  deskripsi   String?
+  inviteToken String   @unique @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  siswa       KelasSiswa[]
+  guruMapel   KelasGuruMapel[]
+  pengumuman  Pengumuman[]
+  asesmenKelas AsesmenKelas[]
+  materiKelas MateriKelas[]
+  tugasKelas  TugasKelas[]
+}
+
+model KelasSiswa {
+  id       String   @id @default(cuid())
+  kelasId  String
+  siswaId  String
+  joinedAt DateTime @default(now())
+  kelas    Kelas    @relation(fields: [kelasId], references: [id])
+  siswa    User     @relation(fields: [siswaId], references: [id])
+  @@unique([kelasId, siswaId])
+}
+
+model Mapel {
+  id            String @id @default(cuid())
+  nama          String @unique
+  kelasGuruMapel KelasGuruMapel[]
+  asesmen       Asesmen[]
+  tugas         Tugas[]
+}
+
+model KelasGuruMapel {
+  id      String @id @default(cuid())
+  kelasId String
+  guruId  String
+  mapelId String
+  kelas   Kelas  @relation(fields: [kelasId], references: [id])
+  guru    User   @relation(fields: [guruId], references: [id])
+  mapel   Mapel  @relation(fields: [mapelId], references: [id])
+  @@unique([kelasId, guruId, mapelId])
+}
+
+model Pengumuman {
+  id        String   @id @default(cuid())
+  kelasId   String
+  authorId  String
+  isi       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  kelas     Kelas      @relation(fields: [kelasId], references: [id])
+  author    User       @relation(fields: [authorId], references: [id])
+  lampiran  Lampiran[]
+}
+
+model Lampiran {
+  id           String     @id @default(cuid())
+  pengumumanId String
+  tipe         String
+  url          String
+  judul        String?
+  thumbnail    String?
+  pengumuman   Pengumuman @relation(fields: [pengumumanId], references: [id])
+}
+
+model Materi {
+  id          String   @id @default(cuid())
+  guruId      String
+  judul       String
+  tipe        String
+  url         String
+  deskripsi   String?
+  createdAt   DateTime @default(now())
+  guru        User        @relation(fields: [guruId], references: [id])
+  kelasTujuan MateriKelas[]
+}
+
+model MateriKelas {
+  id       String @id @default(cuid())
+  materiId String
+  kelasId  String
+  materi   Materi @relation(fields: [materiId], references: [id])
+  kelas    Kelas  @relation(fields: [kelasId], references: [id])
+  @@unique([materiId, kelasId])
+}
+
+model Tugas {
+  id          String   @id @default(cuid())
+  guruId      String
+  judul       String
+  isi         String?
+  mapelId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  guru        User              @relation(fields: [guruId], references: [id])
+  mapel       Mapel?            @relation(fields: [mapelId], references: [id])
+  lampiran    LampiranTugas[]
+  kelasTujuan TugasKelas[]
+  submission  TugasSubmission[]
+}
+
+model LampiranTugas {
+  id        String  @id @default(cuid())
+  tugasId   String
+  tipe      String
+  url       String
+  judul     String?
+  thumbnail String?
+  tugas     Tugas   @relation(fields: [tugasId], references: [id])
+}
+
+model TugasKelas {
+  id      String @id @default(cuid())
+  tugasId String
+  kelasId String
+  tugas   Tugas @relation(fields: [tugasId], references: [id])
+  kelas   Kelas @relation(fields: [kelasId], references: [id])
+  @@unique([tugasId, kelasId])
+}
+
+model TugasSubmission {
+  id          String    @id @default(cuid())
+  tugasId     String
+  siswaId     String
+  status      String    @default("BELUM")
+  submittedAt DateTime?
+  tugas       Tugas     @relation(fields: [tugasId], references: [id])
+  siswa       User      @relation(fields: [siswaId], references: [id])
+  lampiran    LampiranTugasSubmission[]
+  @@unique([tugasId, siswaId])
+}
+
+model LampiranTugasSubmission {
+  id           String          @id @default(cuid())
+  submissionId String
+  tipe         String
+  url          String
+  judul        String?
+  thumbnail    String?
+  submission   TugasSubmission @relation(fields: [submissionId], references: [id])
+}
+
+model Asesmen {
+  id          String        @id @default(cuid())
+  guruId      String
+  judul       String
+  tipe        TipeAsesmen
+  mapelId     String?
+  durasiMenit Int?
+  deskripsi   String?
+  status      StatusAsesmen @default(PROSES)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  guru        User           @relation(fields: [guruId], references: [id])
+  mapel       Mapel?         @relation(fields: [mapelId], references: [id])
+  kelasTujuan AsesmenKelas[]
+  soal        Soal[]
+  submission  Submission[]
+}
+
+model AsesmenKelas {
+  id        String  @id @default(cuid())
+  asesmenId String
+  kelasId   String
+  asesmen   Asesmen @relation(fields: [asesmenId], references: [id])
+  kelas     Kelas   @relation(fields: [kelasId], references: [id])
+  @@unique([asesmenId, kelasId])
+}
+
+model Soal {
+  id         String   @id @default(cuid())
+  asesmenId  String
+  urutan     Int
+  tipe       TipeSoal
+  pertanyaan String
+  gambar     String?
+  asesmen   Asesmen        @relation(fields: [asesmenId], references: [id])
+  opsi      OpsiJawaban[]
+  jawaban   JawabanSiswa[]
+}
+
+model OpsiJawaban {
+  id          String  @id @default(cuid())
+  soalId      String
+  teks        String
+  isBenar     Boolean @default(false)
+  urutan      Int
+  soal        Soal    @relation(fields: [soalId], references: [id])
+  jawabanOpsi JawabanOpsi[]
+}
+
+model Submission {
+  id            String   @id @default(cuid())
+  asesmenId     String
+  siswaId       String
+  status        String   @default("BELUM")
+  submittedAt   DateTime?
+  nilaiAkhir    Float?
+  mulaiPada     DateTime @default(now())
+  soalOrder     String?
+  tabSwitchCount Int     @default(0)
+  asesmen       Asesmen       @relation(fields: [asesmenId], references: [id])
+  siswa         User          @relation(fields: [siswaId], references: [id])
+  jawaban       JawabanSiswa[]
+  @@unique([asesmenId, siswaId])
+}
+
+model JawabanSiswa {
+  id           String  @id @default(cuid())
+  submissionId String
+  soalId       String
+  jawabanEssay String?
+  nilaiSoal    Float?
+  raguRagu     Boolean @default(false)
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  soal         Soal       @relation(fields: [soalId], references: [id])
+  opsiDipilih  JawabanOpsi[]
+}
+
+model JawabanOpsi {
+  id             String       @id @default(cuid())
+  jawabanSiswaId String
+  opsiJawabanId  String
+  jawabanSiswa   JawabanSiswa @relation(fields: [jawabanSiswaId], references: [id])
+  opsiJawaban    OpsiJawaban  @relation(fields: [opsiJawabanId], references: [id])
+}
+
+model LaporanResetPassword {
+  id           String        @id @default(cuid())
+  userId       String
+  email        String
+  alasan       String
+  status       StatusLaporan @default(PENDING)
+  otpHash      String?
+  otpExpiredAt DateTime?
+  otpVerified  Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id])
+}
