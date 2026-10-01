@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import PengumumanCard, { PengumumanData } from "@/components/PengumumanCard";
 import TugasCard, { TugasData } from "@/components/TugasCard";
@@ -20,8 +19,7 @@ import MateriCard, { MateriData } from "@/components/MateriCard";
 import ClassFeedFilter, { filterClassFeed, type ClassFeedType } from "@/components/ClassFeedFilter";
 import type { AsesmenData } from "@/components/Asesmencard";
 import { showAlert, showConfirm } from "@/lib/dialog";
-
-const BRAND = "#658864";
+import { Btn, PANEL } from "@/app/guru/_ui";
 
 interface SiswaDiKelas {
   siswaId: string;
@@ -188,15 +186,15 @@ export default function GuruKelasDetailPage() {
     loadKelas();
   }
 
-  if (loading) return <p className="text-sm text-[#9CA3AF]">Memuat...</p>;
+  if (loading) return <p className="text-sm text-[var(--muted)]">Memuat...</p>;
 
   if (error || !kelas) {
     return (
       <div className="flex flex-col items-center gap-3 py-10">
-        <p className="text-sm text-[#9CA3AF]">{error || "Kelas tidak ditemukan."}</p>
-        <Button variant="outline" onClick={() => router.push("/guru")}>
+        <p className="text-sm text-[var(--muted)]">{error || "Kelas tidak ditemukan."}</p>
+        <Btn variant="outline" onClick={() => router.push("/guru/kelas")}>
           Kembali
-        </Button>
+        </Btn>
       </div>
     );
   }
@@ -217,60 +215,60 @@ export default function GuruKelasDetailPage() {
   const visibleFeed = filterClassFeed(kelas.feed, feedFilter);
 
   return (
-    <div>
-      <section className="border-b border-[#D8DEE6] pb-5">
+    <div className="space-y-6">
+      <section className="border-b border-[var(--border)] pb-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase text-[#64748B]">Ringkasan kelas</p>
-            <h1 className="mt-1 break-words text-2xl font-bold text-[#17231A]">{kelas.judul}</h1>
-            {kelas.deskripsi && <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm text-[#475569]">{kelas.deskripsi}</p>}
+            <p className="text-xs font-medium text-[var(--muted)]">Ringkasan kelas</p>
+            <h1 className="mt-1 break-words text-xl font-semibold tracking-tight">{kelas.judul}</h1>
+            {kelas.deskripsi && <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm text-[var(--muted)]">{kelas.deskripsi}</p>}
           </div>
-          <div className="w-full border border-[#D8DEE6] bg-white p-3 sm:w-auto sm:min-w-56">
-            <p className="text-[10px] font-semibold uppercase text-[#64748B]">Kode kelas</p>
-            <p className="mt-1 break-all text-sm font-bold text-[#17231A]">{kelas.inviteToken}</p>
-            <button onClick={handleCopyInvite} className="mt-2 text-xs font-semibold text-[#365C3A] hover:underline">
+          <div className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 sm:w-auto sm:min-w-56">
+            <p className="text-xs font-medium text-[var(--muted)]">Kode kelas</p>
+            <p className="mt-1 break-all text-sm font-semibold tabular-nums">{kelas.inviteToken}</p>
+            <button onClick={handleCopyInvite} className="mt-2 text-sm font-medium text-[var(--link)] hover:underline">
               {copied ? "Tersalin" : "Salin link undangan"}
             </button>
           </div>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-2 sm:flex">
-          <Button className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "SISWA" ? "primary" : "outline"} onClick={() => setSection(section === "SISWA" ? null : "SISWA")}>
+          <Btn className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "SISWA" ? "primary" : "outline"} onClick={() => setSection(section === "SISWA" ? null : "SISWA")}>
             Siswa ({kelas.siswa.length})
-          </Button>
-          <Button className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "GURU" ? "primary" : "outline"} onClick={() => setSection(section === "GURU" ? null : "GURU")}>
+          </Btn>
+          <Btn className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "GURU" ? "primary" : "outline"} onClick={() => setSection(section === "GURU" ? null : "GURU")}>
             Guru ({kelas.guruMapel.length})
-          </Button>
+          </Btn>
         </div>
       </section>
 
       {section === "SISWA" && (
         <div className="mt-4 space-y-3">
           {Object.keys(siswaGrouped).length === 0 ? (
-            <p className="text-sm text-[#9CA3AF]">Belum ada siswa di kelas ini.</p>
+            <p className="text-sm text-[var(--muted)]">Belum ada siswa di kelas ini.</p>
           ) : (
             Object.entries(siswaGrouped).map(([label, list]) => {
               const isOpen = expandedRombel === label;
               return (
-                <div key={label} className="overflow-hidden border border-[#D8DEE6] bg-white">
-                  <button onClick={() => setExpandedRombel(isOpen ? null : label)} className="flex w-full cursor-pointer items-center justify-between px-5 py-3.5 text-left">
+                <div key={label} className={`${PANEL} overflow-hidden p-0`}>
+                  <button onClick={() => setExpandedRombel(isOpen ? null : label)} className="flex min-h-12 w-full cursor-pointer items-center justify-between px-4 py-3 text-left hover:bg-[var(--tint)]">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold text-[#111827]">{label}</p>
+                      <p className="text-sm font-medium">{label}</p>
                       <Badge tone="brand">{list.length} Siswa</Badge>
                     </div>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`h-4 w-4 text-[var(--muted)] transition-transform ${isOpen ? "rotate-180" : ""}`}>
                       <path d="m6 9 6 6 6-6" />
                     </svg>
                   </button>
                   {isOpen && (
-                    <div className="space-y-2 border-t border-black/5 p-4">
+                    <div className="space-y-2 border-t border-[var(--border)] p-4">
                       {list.map((ks) => (
                         <button
                           key={ks.siswaId}
                           type="button"
                           onClick={() => router.push(`/profil/${ks.siswa.id}`)}
-                          className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-black/5 p-3 text-left transition-colors hover:border-[#C7D2FE] hover:bg-[#F8FAFF]"
+                          className="flex w-full cursor-pointer items-center gap-3 rounded-md border border-[var(--border)] p-3 text-left transition-colors hover:bg-[var(--tint)]"
                         >
-                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
+                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--tint)] text-xs font-semibold text-[var(--muted)]">
                             {ks.siswa.fotoProfil ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={ks.siswa.fotoProfil} alt={ks.siswa.nama} className="h-full w-full object-cover" />
@@ -279,7 +277,7 @@ export default function GuruKelasDetailPage() {
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold text-[#111827]">{ks.siswa.nama}</p>
+                            <p className="truncate text-sm font-medium">{ks.siswa.nama}</p>
                           </div>
                         </button>
                       ))}
@@ -295,15 +293,15 @@ export default function GuruKelasDetailPage() {
       {section === "GURU" && (
         <div className="mt-4">
           {Object.keys(guruGrouped).length === 0 ? (
-            <p className="text-sm text-[#9CA3AF]">Belum ada guru lain di kelas ini.</p>
+            <p className="text-sm text-[var(--muted)]">Belum ada guru lain di kelas ini.</p>
           ) : (
             Object.entries(guruGrouped).map(([mapel, list]) => (
               <div key={mapel} className="mb-4">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{mapel}</p>
-                <div className="space-y-2">
+                <p className="mb-2 text-xs font-medium text-[var(--muted)]">{mapel}</p>
+                <div className={`${PANEL} divide-y divide-[var(--border)] overflow-hidden p-0`}>
                   {list.map((gm) => (
-                    <div key={gm.id} className="flex items-center gap-3 border-b border-[#E2E8F0] bg-white p-3 last:border-0">
-                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
+                    <div key={gm.id} className="flex items-center gap-3 p-3">
+                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--tint)] text-xs font-semibold text-[var(--muted)]">
                         {gm.guru.fotoProfil ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={gm.guru.fotoProfil} alt={gm.guru.nama} className="h-full w-full object-cover" />
@@ -311,7 +309,7 @@ export default function GuruKelasDetailPage() {
                           gm.guru.nama.charAt(0)
                         )}
                       </div>
-                      <p className="text-sm font-semibold text-[#111827]">{gm.guru.nama}</p>
+                      <p className="text-sm font-medium">{gm.guru.nama}</p>
                     </div>
                   ))}
                 </div>
@@ -324,26 +322,18 @@ export default function GuruKelasDetailPage() {
       {section === null && (
         <>
           <div className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            <Button size="sm" onClick={() => { setContentType(null); setShowModalPengumuman(true); }}>
-              + Buat Konten
-            </Button>
-            <Button size="sm" variant="outline" onClick={openBuatQuiz}>
-              + Buat Quiz
-            </Button>
-            <Button size="sm" variant="outline" onClick={openBuatUjian}>
-              + Buat Ujian Online
-            </Button>
-            <Button size="sm" variant="outline" onClick={openBuatTugas}>
-              + Tugas
-            </Button>
+            <Btn size="sm" onClick={() => { setContentType(null); setShowModalPengumuman(true); }}>Buat Konten</Btn>
+            <Btn size="sm" variant="outline" onClick={openBuatQuiz}>Buat Kuis</Btn>
+            <Btn size="sm" variant="outline" onClick={openBuatUjian}>Buat Ujian Online</Btn>
+            <Btn size="sm" variant="outline" onClick={openBuatTugas}>Buat Tugas</Btn>
           </div>
 
           <ClassFeedFilter value={feedFilter} onChange={setFeedFilter} />
           <div className="mt-4 space-y-3">
         {kelas.feed.length === 0 ? (
-          <p className="text-sm text-[#9CA3AF]">Belum ada aktivitas di kelas ini.</p>
+          <p className="rounded-md border border-dashed border-[var(--border-strong)] p-4 text-sm text-[var(--muted)]">Belum ada aktivitas di kelas ini.</p>
         ) : visibleFeed.length === 0 ? (
-          <p className="border border-dashed border-[#CBD5E1] p-4 text-sm text-[#64748B]">Tidak ada aktivitas dengan filter ini.</p>
+          <p className="rounded-md border border-dashed border-[var(--border-strong)] p-4 text-sm text-[var(--muted)]">Tidak ada aktivitas dengan filter ini.</p>
         ) : (
           visibleFeed.map((item, i) => {
             if (item.tipe === "PENGUMUMAN") {
@@ -387,7 +377,7 @@ export default function GuruKelasDetailPage() {
               <div
                 key={`a-${i}`}
                 onClick={() => router.push(`/guru/asesmen/${a.id}`)}
-                className="block w-full cursor-pointer rounded-2xl border border-black/5 bg-[#FAF6EE] p-4 text-left shadow-sm transition-shadow hover:shadow-md"
+                className="block w-full cursor-pointer rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-left transition-colors hover:bg-[var(--tint)]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2">
@@ -403,23 +393,23 @@ export default function GuruKelasDetailPage() {
                           event.stopPropagation();
                           setOpenAsesmenOptionsId((value) => value === a.id ? null : a.id);
                         }}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-lg font-bold text-[#64748B] hover:bg-[#F1F5F9]"
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-lg font-bold text-[var(--muted)] hover:bg-[var(--tint)]"
                       >
                         ⋯
                       </button>
                       {openAsesmenOptionsId === a.id && (
-                        <div onClick={(event) => event.stopPropagation()} className="absolute right-0 top-9 z-20 w-32 overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#FAF6EE] py-1 text-left shadow-lg">
+                        <div onClick={(event) => event.stopPropagation()} className="absolute right-0 top-9 z-20 w-32 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)] py-1 text-left shadow-lg">
                           {a.status === "PROSES" && (
-                            <button type="button" onClick={() => { setOpenAsesmenOptionsId(null); setEditingAsesmen(a as AsesmenData); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[#475569] hover:bg-[#F8FAFC]">
+                            <button type="button" onClick={() => { setOpenAsesmenOptionsId(null); setEditingAsesmen(a as AsesmenData); }} className="block h-9 w-full cursor-pointer px-3 text-left text-xs font-medium hover:bg-[var(--tint)]">
                               Edit
                             </button>
                           )}
                           {a.status === "SELESAI" && (
-                            <button type="button" onClick={() => { setOpenAsesmenOptionsId(null); setSendingAsesmen(a); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[#475569] hover:bg-[#F8FAFC]">
+                            <button type="button" onClick={() => { setOpenAsesmenOptionsId(null); setSendingAsesmen(a); }} className="block h-9 w-full cursor-pointer px-3 text-left text-xs font-medium hover:bg-[var(--tint)]">
                               Kirim ke
                             </button>
                           )}
-                          <button type="button" onClick={() => { setOpenAsesmenOptionsId(null); void handleDeleteAsesmen(a.id); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50">
+                          <button type="button" onClick={() => { setOpenAsesmenOptionsId(null); void handleDeleteAsesmen(a.id); }} className="block h-9 w-full cursor-pointer px-3 text-left text-xs font-medium text-[var(--danger)] hover:bg-[var(--tint)]">
                             Hapus
                           </button>
                         </div>
@@ -427,8 +417,8 @@ export default function GuruKelasDetailPage() {
                     </div>
                   )}
                 </div>
-                <p className="mt-2 text-sm font-bold text-[#111827]">{a.judul}</p>
-                <p className="mt-1 text-xs text-[#9CA3AF]">
+                <p className="mt-2 text-sm font-semibold">{a.judul}</p>
+                <p className="mt-1 text-xs text-[var(--muted)]">
                   {a._count?.soal ?? 0} soal · oleh {a.guru?.nama}
                 </p>
               </div>
@@ -497,7 +487,7 @@ export default function GuruKelasDetailPage() {
             <option value="PENGUMUMAN">Pengumuman</option>
             <option value="MATERI">Materi</option>
           </Select>
-          <p className="text-xs text-[#64748B]">Pilih jenis konten untuk kelas ini.</p>
+          <p className="text-xs text-[var(--muted)]">Pilih jenis konten untuk kelas ini.</p>
         </div>
       </Modal>
       <ModalEditAsesmen

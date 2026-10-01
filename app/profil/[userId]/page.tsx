@@ -5,11 +5,9 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import ModalEditProfil from "@/components/ModalEditProfil";
-
-const BRAND = "#658864";
+import { Avatar, Btn, PANEL, STYLES, ThemeToggle } from "@/app/guru/_ui";
 
 type Role = "ADMIN" | "KEPSEK" | "KURIKULUM" | "GURU" | "SISWA";
 
@@ -179,8 +177,9 @@ export default function ProfilPage() {
   const isGuru = profil?.role === "GURU";
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FAF6EE]" style={{ fontFamily: "Inter, sans-serif" }}>
-      <header className="no-print sticky top-0 z-40 border-b border-black/5 bg-[#FAF6EE]">
+    <div className="lp flex min-h-screen flex-col bg-[var(--bg)] text-[var(--fg)]" style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
+      <style>{STYLES}</style>
+      <header className="no-print sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg)]">
         <div className="flex items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <button
@@ -203,21 +202,15 @@ export default function ProfilPage() {
           <div className="flex items-center gap-3">
             {me && (
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold text-[#111827]">{me.nama}</p>
-                <p className="text-xs text-[#9CA3AF]">{me.role}</p>
+                <p className="text-sm font-medium">{me.nama}</p>
+                <p className="text-xs text-[var(--muted)]">{me.role}</p>
               </div>
             )}
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
-              {me?.fotoProfil ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" />
-              ) : (
-                me?.nama?.charAt(0) ?? "?"
-              )}
-            </div>
-            <Button size="sm" variant="outline" onClick={() => router.back()}>
+            <Avatar src={me?.fotoProfil} nama={me?.nama} size={36} />
+            <Btn size="sm" variant="outline" onClick={() => router.back()}>
               Back
-            </Button>
+            </Btn>
+            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -227,39 +220,32 @@ export default function ProfilPage() {
       )}
 
       <aside
-        className={`no-print fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto bg-[#FAF6EE] p-4 shadow-[8px_0_24px_rgba(15,23,42,0.12)] transition-transform duration-300 ease-out ${
+        className={`no-print fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto border-r border-[var(--border)] bg-[var(--bg)] p-4 shadow-[8px_0_24px_rgba(15,23,42,0.12)] transition-transform duration-300 ease-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-label="Navigasi"
       >
-        <div className="flex min-h-full flex-col border-r border-black/5 bg-[#FAF6EE] p-4 shadow-sm">
-          <p className="mb-3 px-2 pt-2 text-sm font-bold text-[#111827]">
+        <div className="flex min-h-full flex-col bg-[var(--bg)] p-1">
+          <p className="mb-3 px-2 pt-2 text-sm font-medium text-[var(--muted)]">
             {dashboardLabel}
             <br />
-            <span style={{ color: BRAND }}>- Profile</span>
+            <span className="text-[var(--link)]">- Profile</span>
           </p>
           <nav className="flex flex-col gap-1">
             {me?.role === "ADMIN" && (
               <>
-                <div className="mb-3 flex items-center gap-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#64748B]">
-                    {me?.fotoProfil ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" />
-                    ) : (
-                      me?.nama?.charAt(0) ?? "A"
-                    )}
-                  </div>
+                <div className="mb-3 flex items-center gap-3 rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
+                  <Avatar src={me?.fotoProfil} nama={me?.nama} />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#111827]">{me?.nama}</p>
-                    <p className="text-xs text-[#9CA3AF]">Admin</p>
+                    <p className="truncate text-sm font-medium">{me?.nama}</p>
+                    <p className="text-xs text-[var(--muted)]">Admin</p>
                   </div>
                 </div>
                 {ADMIN_TABS.map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => navigateAdminTab(tab.key)}
-                    className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-left text-sm font-semibold text-[#374151] hover:bg-black/5"
+                    className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium text-[var(--muted)] hover:bg-[var(--tint)] hover:text-[var(--fg)]"
                   >
                     <AdminIcon tab={tab.key} />
                     <span>{tab.label}</span>
@@ -282,18 +268,11 @@ export default function ProfilPage() {
 
             {(me?.role === "GURU" || me?.role === "SISWA") && (
               <>
-                <div className="mb-3 flex items-center gap-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#64748B]">
-                    {me?.fotoProfil ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" />
-                    ) : (
-                      me?.nama?.charAt(0) ?? "G"
-                    )}
-                  </div>
+                <div className="mb-3 flex items-center gap-3 rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
+                  <Avatar src={me?.fotoProfil} nama={me?.nama} />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#111827]">{me?.nama}</p>
-                    <p className="text-xs text-[#9CA3AF]">{me?.role === "GURU" ? "Guru" : "Siswa"}</p>
+                    <p className="truncate text-sm font-medium">{me?.nama}</p>
+                    <p className="text-xs text-[var(--muted)]">{me?.role === "GURU" ? "Guru" : "Siswa"}</p>
                   </div>
                 </div>
                 {([
@@ -309,8 +288,7 @@ export default function ProfilPage() {
                     key={`${nav}-${label}`}
                     href={href}
                     onClick={() => setSidebarOpen(false)}
-                    className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
-                    style={nav === "PROFILE" ? { background: `${BRAND}1A`, color: BRAND } : { color: "#374151" }}
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${nav === "PROFILE" ? "bg-[var(--brand)] text-[var(--on-brand)]" : "text-[var(--muted)] hover:bg-[var(--tint)] hover:text-[var(--fg)]"}`}
                   >
                     <GuruSiswaIcon nav={nav} />
                     {label}
@@ -319,33 +297,33 @@ export default function ProfilPage() {
               </>
             )}
           </nav>
-          <Button
+          <Btn
             size="md"
             onClick={handleLogout}
-            className="mt-auto w-full rounded-xl"
-            style={{ background: "#F8CDBD", color: "#7C4A3A" }}
+            variant="outline"
+            className="mt-auto w-full"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
               <path d="M10 17l5-5-5-5M15 12H3M21 4v16" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Keluar
-          </Button>
+          </Btn>
         </div>
       </aside>
 
       <main className="profile-print-area mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
         {loading ? (
-          <p className="text-sm text-[#9CA3AF]">Memuat...</p>
+          <p className="text-sm text-[var(--muted)]">Memuat...</p>
         ) : error || !profil ? (
           <div className="flex flex-col items-center gap-3 py-10">
-            <p className="text-sm text-[#9CA3AF]">{error || "Profil tidak ditemukan."}</p>
+            <p className="text-sm text-[var(--muted)]">{error || "Profil tidak ditemukan."}</p>
           </div>
         ) : (
           <>
             <div className="profile-card overflow-hidden rounded-2xl shadow-sm">
-              <div className="profile-card-header" style={{ background: BRAND }}>
+              <div className="profile-card-header bg-[var(--brand)]">
               <div className="flex items-start justify-between gap-3 p-5 pb-0">
-                <span className="rounded-full bg-[#FAF6EE]/20 px-3 py-1 text-xs font-semibold text-white">
+                <span className="rounded-md bg-white/15 px-3 py-1 text-xs font-medium text-white">
                   Profil {roleLabel[profil.role]}
                 </span>
                 <div className="no-print flex items-center gap-2">
@@ -353,7 +331,7 @@ export default function ProfilPage() {
                     type="button"
                     onClick={() => window.print()}
                     title="Cetak profil"
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#FAF6EE] px-3 py-1.5 text-xs font-semibold text-[#658864] shadow-sm hover:bg-[#FAF6EE]/90"
+                    className="flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-white px-3 text-xs font-medium text-[var(--brand)] shadow-sm hover:bg-white/90"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5">
                       <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
@@ -364,7 +342,7 @@ export default function ProfilPage() {
                   {profil.isSelf && (
                     <button
                       onClick={() => setShowEdit(true)}
-                      className="cursor-pointer rounded-full bg-[#FAF6EE] px-3 py-1.5 text-xs font-semibold text-[#658864] hover:bg-[#FAF6EE]/90"
+                      className="h-9 cursor-pointer rounded-md bg-white px-3 text-xs font-medium text-[var(--brand)] hover:bg-white/90"
                     >
                       Edit Profile
                     </button>
@@ -373,7 +351,7 @@ export default function ProfilPage() {
               </div>
               <div className="p-5">
                 <p className="text-lg font-bold text-white">{profil.nama.split(" ")[0]}</p>
-                <div className="mt-3 h-32 w-32 overflow-hidden rounded-2xl bg-[#FAF6EE]/20">
+                <div className="mt-3 h-32 w-32 overflow-hidden rounded-lg bg-white/15">
                   {profil.fotoProfil ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={profil.fotoProfil} alt={profil.nama} className="h-full w-full object-cover" />
@@ -386,8 +364,8 @@ export default function ProfilPage() {
               </div>
               </div>
 
-            <div className="profile-card-details rounded-b-2xl border border-t-0 border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-              <p className="text-lg font-bold text-[#111827]">{profil.nama}</p>
+            <div className="profile-card-details rounded-b-lg border border-t-0 border-[var(--border)] bg-[var(--surface)] p-5">
+              <p className="text-lg font-semibold">{profil.nama}</p>
 
               <div className="mt-2 flex flex-wrap gap-2">
                 {profil.isSelf && <Badge tone="brand">Aktif</Badge>}
@@ -396,54 +374,54 @@ export default function ProfilPage() {
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {isSiswa && (
-                  <div className="rounded-xl bg-[#FAF6EE] p-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">
+                  <div className="rounded-md border border-[var(--border)] bg-[var(--tint)] p-3">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
                       {profil.isSelf ? "NIS" : "Status"}
                     </p>
-                    <p className="mt-0.5 text-sm font-bold text-[#111827]">
+                    <p className="mt-0.5 text-sm font-semibold">
                       {profil.isSelf ? profil.nis ?? "-" : "Aktif"}
                     </p>
                   </div>
                 )}
                 {isGuru && (
-                  <div className="rounded-xl bg-[#FAF6EE] p-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">
+                  <div className="rounded-md border border-[var(--border)] bg-[var(--tint)] p-3">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
                       {profil.isSelf ? "NIK" : "Status"}
                     </p>
-                    <p className="mt-0.5 text-sm font-bold text-[#111827]">
+                    <p className="mt-0.5 text-sm font-semibold">
                       {profil.isSelf ? profil.nik ?? "-" : "Aktif"}
                     </p>
                   </div>
                 )}
 
-                <div className="rounded-xl bg-[#FAF6EE] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Status</p>
-                  <p className="mt-0.5 text-sm font-bold text-[#111827]">{roleLabel[profil.role]}</p>
+                <div className="rounded-md border border-[var(--border)] bg-[var(--tint)] p-3">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">Status</p>
+                  <p className="mt-0.5 text-sm font-semibold">{roleLabel[profil.role]}</p>
                 </div>
 
                 {isSiswa && (
-                  <div className="rounded-xl bg-[#FAF6EE] p-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Jurusan</p>
-                    <p className="mt-0.5 text-sm font-bold text-[#111827]">{profil.jurusan ?? "-"}</p>
+                  <div className="rounded-md border border-[var(--border)] bg-[var(--tint)] p-3">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">Jurusan</p>
+                    <p className="mt-0.5 text-sm font-semibold">{profil.jurusan ?? "-"}</p>
                   </div>
                 )}
                 {isGuru && (
-                  <div className="rounded-xl bg-[#FAF6EE] p-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Mapel</p>
-                    <p className="mt-0.5 text-sm font-bold text-[#111827]">
+                  <div className="rounded-md border border-[var(--border)] bg-[var(--tint)] p-3">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">Mapel</p>
+                    <p className="mt-0.5 text-sm font-semibold">
                       {profil.mapel.length > 0 ? profil.mapel.join(", ") : "-"}
                     </p>
                   </div>
                 )}
 
-                <div className="col-span-2 rounded-xl bg-[#FAF6EE] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Jenis Kelamin</p>
-                  <p className="mt-0.5 text-sm font-bold text-[#111827]">{profil.jenisKelamin ?? "-"}</p>
+                <div className="col-span-2 rounded-md border border-[var(--border)] bg-[var(--tint)] p-3">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">Jenis Kelamin</p>
+                  <p className="mt-0.5 text-sm font-semibold">{profil.jenisKelamin ?? "-"}</p>
                 </div>
 
-                <div className="col-span-2 rounded-xl bg-[#FAF6EE] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Deskripsi</p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-[#374151]">{profil.deskripsi || "-"}</p>
+                <div className="col-span-2 rounded-md border border-[var(--border)] bg-[var(--tint)] p-3">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">Deskripsi</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--muted)]">{profil.deskripsi || "-"}</p>
                 </div>
               </div>
             </div>
@@ -506,9 +484,9 @@ export default function ProfilPage() {
         />
       )}
 
-      <footer className="no-print py-10 text-center text-white" style={{ background: BRAND }}>
+      <footer className="no-print mt-auto border-t border-[var(--border)] bg-[var(--bg)] py-8 text-center text-[var(--muted)]">
         <p className="text-lg font-bold">Studify</p>
-        <p className="mt-8 border-t border-white/20 pt-6 text-xs text-white/80">
+        <p className="mt-6 border-t border-[var(--border)] pt-5 text-xs">
           © 2026 Studify. All Rights Reserved.
         </p>
       </footer>

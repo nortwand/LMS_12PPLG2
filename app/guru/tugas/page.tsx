@@ -2,13 +2,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Button from "@/components/ui/Button";
 import TugasCard, { TugasData } from "@/components/TugasCard";
 import ModalTugas from "@/components/ModalTugas";
 import ModalKirimTugas from "@/components/ModalKirimTugas";
 import { showConfirm } from "@/lib/dialog";
+import { Btn, PageTitle, INPUT, LABEL } from "@/app/guru/_ui";
 
-const BRAND = "#658864";
+/*
+  Palet (3 warna): Brand #658864, Bg #FAF6EE, Putih #FFFFFF.
+  Token disediakan oleh app/guru/layout.tsx.
+*/
 
 export default function GuruTugasPage() {
   const [tugasList, setTugasList] = useState<TugasData[]>([]);
@@ -69,16 +72,17 @@ export default function GuruTugasPage() {
   const history = tugasList.filter((t) => new Date(t.createdAt).toDateString() !== todayStr);
 
   return (
-    <div>
-      <div className="rounded-2xl p-5 text-white shadow-sm" style={{ background: BRAND }}>
-        <p className="text-sm font-bold">Selamat Datang di Tab Tugas</p>
-        <p className="mt-1 text-sm text-white/85">Buat Tugas kemudian kirim ke suatu kelas untuk memulai tugas.</p>
-      </div>
+    <div className="space-y-6">
+      <PageTitle
+        title="Tugas"
+        desc="Buat tugas, lalu kirim ke kelas untuk memulainya."
+        action={<Btn onClick={openBuat}>+ Buat Tugas</Btn>}
+      />
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <Button onClick={openBuat}>+ Buat Tugas</Button>
+      <label className={`${LABEL} max-w-sm`}>
+        Filter kelas
         <select
-          className="rounded-lg border border-[#D1D5DB] px-3 py-2 text-sm outline-none focus:border-[#658864]"
+          className={`${INPUT} mt-1`}
           value={filterKelasId}
           onChange={(e) => setFilterKelasId(e.target.value)}
         >
@@ -89,16 +93,18 @@ export default function GuruTugasPage() {
             </option>
           ))}
         </select>
-      </div>
+      </label>
 
       {loading ? (
-        <p className="mt-4 text-sm text-[#9CA3AF]">Memuat...</p>
+        <p className="text-sm text-[var(--muted)]">Memuat...</p>
       ) : (
-        <>
-          <div className="mt-6">
-            <p className="mb-3 text-sm font-bold text-[#111827]">Tugas Hari Ini</p>
+        <div className="space-y-8">
+          <section>
+            <h2 className="mb-3 text-base font-semibold">Tugas Hari Ini</h2>
             {hariIni.length === 0 ? (
-              <p className="text-sm text-[#9CA3AF]">Belum ada tugas dibuat hari ini.</p>
+              <p className="rounded-md border border-dashed border-[var(--border-strong)] p-4 text-sm text-[var(--muted)]">
+                Belum ada tugas dibuat hari ini.
+              </p>
             ) : (
               <div className="space-y-3">
                 {hariIni.map((t) => (
@@ -106,12 +112,14 @@ export default function GuruTugasPage() {
                 ))}
               </div>
             )}
-          </div>
+          </section>
 
-          <div className="mt-8">
-            <p className="mb-3 text-sm font-bold text-[#111827]">History</p>
+          <section>
+            <h2 className="mb-3 text-base font-semibold">History</h2>
             {history.length === 0 ? (
-              <p className="text-sm text-[#9CA3AF]">Belum ada riwayat tugas.</p>
+              <p className="rounded-md border border-dashed border-[var(--border-strong)] p-4 text-sm text-[var(--muted)]">
+                Belum ada riwayat tugas.
+              </p>
             ) : (
               <div className="space-y-3">
                 {history.map((t) => (
@@ -119,8 +127,8 @@ export default function GuruTugasPage() {
                 ))}
               </div>
             )}
-          </div>
-        </>
+          </section>
+        </div>
       )}
 
       <ModalTugas

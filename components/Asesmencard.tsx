@@ -30,9 +30,9 @@ interface AsesmenCardProps {
   onRemove?: (data: AsesmenData) => void;
 }
 
-const tipeConfig: Record<AsesmenData["tipe"], { label: string; color: string; bg: string }> = {
-  KUIS: { label: "Kuis", color: "#3B82F6", bg: "#DBEAFE" },
-  UJIAN: { label: "Ujian Online", color: "#8B5CF6", bg: "#EDE9FE" },
+const tipeConfig: Record<AsesmenData["tipe"], { label: string }> = {
+  KUIS: { label: "Kuis" },
+  UJIAN: { label: "Ujian Online" },
 };
 
 export default function AsesmenCard({ data, basePath = "/guru/asesmen", submissionStatus, onEdit, onSend, onDelete, onRemove }: AsesmenCardProps) {
@@ -53,15 +53,14 @@ export default function AsesmenCard({ data, basePath = "/guru/asesmen", submissi
   return (
     <div
       onClick={() => router.push(`${basePath}/${data.id}`)}
-      className="group cursor-pointer overflow-hidden rounded-2xl border border-black/5 bg-[#FAF6EE] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      className="group cursor-pointer overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] transition-colors hover:bg-[var(--tint)]"
     >
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-            style={{ background: tc.bg }}
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-[var(--tint)] text-[var(--brand)]"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke={tc.color} strokeWidth="1.8" className="h-5 w-5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
               <path d="M12 2l3 6 6.5.9-4.7 4.6L18 20l-6-3.4L6 20l1.2-6.5L2.5 8.9 9 8l3-6Z" />
             </svg>
           </div>
@@ -108,28 +107,28 @@ export default function AsesmenCard({ data, basePath = "/guru/asesmen", submissi
           </div>
         </div>
 
-        <p className="mt-3 truncate text-sm font-bold text-[#111827]">{data.judul}</p>
+        <p className="mt-3 truncate text-sm font-semibold">{data.judul}</p>
 
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <Badge tone="gray">{tc.label}</Badge>
           {data.mapel && <Badge tone="brand">{data.mapel.nama}</Badge>}
-          {data.durasiMenit && <span className="text-[11px] text-[#9CA3AF]">{data.durasiMenit} menit</span>}
+          {data.durasiMenit && <span className="text-[11px] text-[var(--muted)]">{data.durasiMenit} menit</span>}
         </div>
 
         {data.kelasTujuan && data.kelasTujuan.length > 0 && (
-          <p className="mt-2 truncate text-[11px] text-[#6B7280]">
+          <p className="mt-2 truncate text-[11px] text-[var(--muted)]">
             {data.kelasTujuan.map((kt) => kt.kelas.judul).join(", ")}
           </p>
         )}
 
         {data.createdAt && (
-          <p className="mt-2 truncate text-[11px] text-[#9CA3AF]" title={formatTanggalIndonesia(data.createdAt)}>
+          <p className="mt-2 truncate text-[11px] text-[var(--muted)]" title={formatTanggalIndonesia(data.createdAt)}>
             Dibuat: {formatTanggalIndonesia(data.createdAt)}
           </p>
         )}
 
         {data._count && (
-          <div className="mt-3 flex items-center gap-3 border-t border-black/5 pt-2.5 text-[11px] text-[#9CA3AF]">
+          <div className="mt-3 flex items-center gap-3 border-t border-[var(--border)] pt-2.5 text-[11px] text-[var(--muted)]">
             <span>{data._count.soal} soal</span>
             <span>•</span>
             <span>{data._count.submission} pengumpulan</span>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Button from "@/components/ui/Button";
 import MateriCard, { MateriData } from "@/components/MateriCard";
 import ModalMateri from "@/components/Modalmateri";
 import { showAlert, showConfirm } from "@/lib/dialog";
+import { Btn, INPUT, LABEL, PageTitle, PANEL } from "@/app/guru/_ui";
 
 export default function GuruMateriPage() {
   const [materiList, setMateriList] = useState<MateriData[]>([]);
@@ -62,29 +62,27 @@ export default function GuruMateriPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col gap-3 border-b border-[#D8DEE6] pb-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-[#17231A]">Materi</h1>
-          <p className="mt-1 text-sm text-[#64748B]">Materi untuk kelas yang Anda ajar.</p>
-        </div>
-        <Button onClick={() => {
+      <PageTitle
+        title="Materi"
+        desc="Kelola materi pembelajaran untuk kelas yang Anda ajar."
+        action={<Btn onClick={() => {
           setEditing(null);
           setShowModal(true);
-        }}>+ Upload Materi</Button>
-      </header>
+        }}>Upload Materi</Btn>}
+      />
 
-      <label className="block max-w-sm text-xs font-semibold text-[#475569]">
+      <label className={`${LABEL} block max-w-sm`}>
         Filter kelas
-        <select value={kelasFilter} onChange={(event) => setKelasFilter(event.target.value)} className="mt-1 w-full border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm font-normal">
+        <select value={kelasFilter} onChange={(event) => setKelasFilter(event.target.value)} className={`${INPUT} mt-1`}>
           <option value="">Semua kelas</option>
           {kelasList.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.judul}</option>)}
         </select>
       </label>
 
-      {loading ? <p className="text-sm text-[#64748B]">Memuat materi...</p> : (
+      {loading ? <p className="text-sm text-[var(--muted)]">Memuat materi...</p> : (
         <div className="space-y-7">
           <section>
-            <h2 className="mb-3 text-base font-bold text-[#17231A]">Materi Hari Ini</h2>
+            <h2 className="mb-3 text-base font-semibold">Materi Hari Ini</h2>
             <div className="space-y-2">
               {materiHariIni.length ? materiHariIni.map((item) => (
                 <MateriCard
@@ -94,12 +92,12 @@ export default function GuruMateriPage() {
                   onEdit={(materi) => { setEditing(materi); setShowModal(true); }}
                   onDelete={handleDelete}
                 />
-              )) : <p className="border border-dashed border-[#CBD5E1] p-4 text-sm text-[#64748B]">Belum ada materi hari ini.</p>}
+              )) : <p className={`${PANEL} border-dashed text-sm text-[var(--muted)]`}>Belum ada materi hari ini.</p>}
             </div>
           </section>
 
           <section>
-            <h2 className="mb-3 text-base font-bold text-[#17231A]">History</h2>
+            <h2 className="mb-3 text-base font-semibold">History</h2>
             <div className="space-y-2">
               {materiHistory.length ? materiHistory.map((item) => (
                 <MateriCard
@@ -109,7 +107,7 @@ export default function GuruMateriPage() {
                   onEdit={(materi) => { setEditing(materi); setShowModal(true); }}
                   onDelete={handleDelete}
                 />
-              )) : <p className="border border-dashed border-[#CBD5E1] p-4 text-sm text-[#64748B]">Belum ada riwayat materi.</p>}
+              )) : <p className={`${PANEL} border-dashed text-sm text-[var(--muted)]`}>Belum ada riwayat materi.</p>}
             </div>
           </section>
         </div>

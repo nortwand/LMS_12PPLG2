@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import Button from "@/components/ui/Button";
+import { STYLES, ThemeToggle, Avatar } from "@/app/guru/_ui";
 
-const BRAND = "#658864";
+/*
+  Palet (3 warna): Brand #658864, Bg #FAF6EE, Putih #FFFFFF.
+  Layout ini membungkus semua halaman /guru/* dan menyediakan token (.lp),
+  header, sidebar, dan footer. Halaman anak cukup memakai var(--...).
+*/
 
 type NavKey = "DASHBOARD" | "KELAS" | "ASESMEN" | "TUGAS" | "MATERI" | "PERFORMA" | "PROFILE";
 
@@ -21,7 +24,7 @@ function NavIcon({ nav }: { nav: NavKey }) {
     PROFILE: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />,
   };
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] flex-shrink-0">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] flex-shrink-0">
       {paths[nav]}
     </svg>
   );
@@ -30,7 +33,8 @@ function NavIcon({ nav }: { nav: NavKey }) {
 export default function GuruLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop collapse
   const [me, setMe] = useState<{ id: string; nama: string; role: string; fotoProfil: string | null } | null>(null);
 
   useEffect(() => {
@@ -61,114 +65,131 @@ export default function GuruLayout({ children }: { children: React.ReactNode }) 
     return pathname.startsWith(href);
   }
 
+  const labelCls = sidebarCollapsed ? "lg:hidden" : "";
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#FAF6EE]" style={{ fontFamily: "Inter, sans-serif" }}>
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-[#FAF6EE]">
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6">
+    <div
+      className="lp flex min-h-screen flex-col bg-[var(--bg)] text-[var(--fg)]"
+      style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+    >
+      <style>{STYLES}</style>
+
+      {/* HEADER */}
+      <header className="sticky top-0 z-40 h-14 border-b border-[var(--border)] bg-[var(--bg)]">
+        <div className="flex h-full items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
+            {/* mobile: buka drawer */}
             <button
+              type="button"
               onClick={() => setSidebarOpen((v) => !v)}
-              aria-label="Toggle sidebar"
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-black/5"
+              aria-label="Buka menu"
+              aria-expanded={sidebarOpen}
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md hover:bg-[var(--tint)] lg:hidden"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" className="h-5 w-5">
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div className="relative h-8 w-8 flex-shrink-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#658864] text-xs font-black text-white">S</div>
-            </div>
-            <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Studify
-            </span>
+            {/* desktop: collapse sidebar */}
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed((v) => !v)}
+              aria-label={sidebarCollapsed ? "Perluas sidebar" : "Ciutkan sidebar"}
+              aria-expanded={!sidebarCollapsed}
+              className="hidden h-10 w-10 cursor-pointer items-center justify-center rounded-md hover:bg-[var(--tint)] lg:flex"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" className="h-5 w-5">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-base font-semibold tracking-tight">Studify</span>
           </div>
 
           <div className="flex items-center gap-3">
-            {me && <span className="hidden text-sm font-semibold text-[#111827] sm:block">{me.nama}</span>}
-            <div className="hidden h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280] sm:flex">
-              {me?.fotoProfil ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" />
-              ) : (
-                me?.nama?.charAt(0) ?? "G"
-              )}
+            {me && (
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-medium leading-tight">{me.nama}</p>
+                <p className="text-xs leading-tight text-[var(--muted)]">Guru</p>
+              </div>
+            )}
+            <div className="hidden sm:block">
+              <Avatar src={me?.fotoProfil} nama={me?.nama} />
             </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
 
       <div className="flex flex-1">
+        {/* BACKDROP (mobile saja) */}
         {sidebarOpen && (
-          <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" />
+          <div
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          />
         )}
 
+        {/* SIDEBAR */}
         <aside
           aria-label="Navigasi guru"
-          className={`fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto bg-[#FAF6EE] p-4 shadow-[8px_0_24px_rgba(15,23,42,0.12)] transition-transform duration-300 ease-out ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--bg)] p-3 transition-transform duration-150 ease-out
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            lg:sticky lg:top-14 lg:z-10 lg:h-[calc(100vh-3.5rem)] lg:flex-shrink-0 lg:translate-x-0 lg:transition-[width]
+            ${sidebarCollapsed ? "lg:w-16" : "lg:w-60"}`}
         >
-          <div className="flex min-h-full flex-col border-r border-black/5 bg-[#FAF6EE] p-4 shadow-sm">
-            <div className="mb-3 flex items-center gap-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#64748B]">
-                {me?.fotoProfil ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" />
-                ) : (
-                  me?.nama?.charAt(0) ?? "G"
-                )}
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#111827]">{me?.nama}</p>
-                <p className="text-xs text-[#9CA3AF]">Guru</p>
-              </div>
-            </div>
-            <p className="mb-3 px-2 pt-2 text-sm font-bold text-[#111827]">
-              Dashboard Guru
-              <br />
-              <span style={{ color: BRAND }}>
-                - {NAV_ITEMS.find((n) => isActive(n.href))?.label ?? "Kelas"}
-              </span>
-            </p>
-            <nav className="flex flex-col gap-1">
-              {NAV_ITEMS.map((item) => {
-                const active = isActive(item.href);
-                return (
-                  <Link
-                    key={item.key}
-                    href={item.href}
-                    onClick={() => setSidebarOpen(false)}
-                    className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
-                    style={active ? { background: `${BRAND}1A`, color: BRAND } : { color: "#374151" }}
-                  >
-                    <NavIcon nav={item.key} />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-            <Button
-              size="md"
-              onClick={handleLogout}
-              className="mt-auto w-full rounded-xl"
-              style={{ background: "#F8CDBD", color: "#7C4A3A" }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-                <path d="M10 17l5-5-5-5M15 12H3M21 4v16" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Keluar
-            </Button>
-          </div>
+          <p className={`mb-2 px-3 pt-2 text-xs font-medium text-[var(--muted)] ${labelCls}`}>Dashboard Guru</p>
+          <nav className="flex flex-col gap-1">
+            {NAV_ITEMS.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  title={item.label}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex h-10 cursor-pointer items-center gap-3 rounded-md px-3 text-sm font-medium ${
+                    sidebarCollapsed ? "lg:justify-center lg:px-0" : ""
+                  } ${
+                    active
+                      ? "bg-[var(--brand)] text-[var(--on-brand)]"
+                      : "text-[var(--muted)] hover:bg-[var(--tint)] hover:text-[var(--fg)]"
+                  }`}
+                >
+                  <NavIcon nav={item.key} />
+                  <span className={labelCls}>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Keluar"
+            className={`mt-auto flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-[var(--border-strong)] text-sm font-medium hover:bg-[var(--tint)] ${
+              sidebarCollapsed ? "lg:border-transparent" : ""
+            }`}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <path d="M10 17l5-5-5-5M15 12H3M21 4v16" />
+            </svg>
+            <span className={labelCls}>Keluar</span>
+          </button>
         </aside>
 
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6">{children}</main>
+        {/* KONTEN */}
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6">
+          <div className="mx-auto max-w-5xl">{children}</div>
+        </main>
       </div>
 
-      <footer className="py-10 text-center text-white" style={{ background: BRAND }}>
-        <p className="text-lg font-bold">Studify</p>
-        <p className="mt-8 border-t border-white/20 pt-6 text-xs text-white/80">
-          © 2026 Studify. All Rights Reserved.
-        </p>
+      {/* FOOTER */}
+      <footer className="mt-auto border-t border-[var(--border)]">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <span className="font-medium text-[var(--fg)]">Studify</span>
+          <span>© 2026 Studify. All Rights Reserved.</span>
+        </div>
       </footer>
     </div>
   );

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import Badge from "@/components/ui/Badge";
 import TabelNilai from "@/components/Tabelnilai";
+import { PANEL } from "@/app/guru/_ui";
 
 interface NilaiRow {
   submissionId: string;
@@ -70,18 +71,18 @@ export default function GuruJawabanPage() {
     [hasil, selectedKelasId]
   );
 
-  if (loading) return <p className="text-sm text-[#9CA3AF]">Memuat jawaban...</p>;
-  if (!hasil) return <p className="text-sm text-red-500">{error || "Jawaban tidak ditemukan."}</p>;
+  if (loading) return <p className="text-sm text-[var(--muted)]">Memuat jawaban...</p>;
+  if (!hasil) return <p className="text-sm text-[var(--danger)]">{error || "Jawaban tidak ditemukan."}</p>;
 
   return (
-    <div className="mx-auto max-w-6xl pb-10">
-      <Link href={`/guru/asesmen/${asesmenId}`} className="text-sm font-semibold text-[#64748B] hover:text-[#658864]">
+    <div className="space-y-6 pb-10">
+      <Link href={`/guru/asesmen/${asesmenId}`} className="inline-flex items-center text-sm font-medium text-[var(--link)] hover:underline">
         &larr; Kembali ke Asesmen
       </Link>
 
-      <div className="mt-4 rounded-xl border border-black/5 border-t-4 border-t-[#658864] bg-[#FAF6EE] p-6 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">Jawaban Siswa</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#111827]">{hasil.asesmen.judul}</h1>
+      <div className={`${PANEL} border-t-4 border-t-[var(--brand)]`}>
+        <p className="text-xs font-medium text-[var(--muted)]">Jawaban siswa</p>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">{hasil.asesmen.judul}</h1>
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge tone="brand">{hasil.asesmen.tipe === "KUIS" ? "Kuis" : "Ujian Online"}</Badge>
           {hasil.asesmen.mapel && <Badge tone="gray">{hasil.asesmen.mapel}</Badge>}
@@ -89,12 +90,12 @@ export default function GuruJawabanPage() {
         </div>
       </div>
 
-      {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
-      <div className="mt-6">
-        <h2 className="mb-3 text-base font-bold text-[#111827]">Daftar Perkelas</h2>
+      <div>
+        <h2 className="mb-3 text-base font-semibold">Daftar per kelas</h2>
         {kelasTujuan.length === 0 ? (
-          <p className="text-sm text-[#94A3B8]">Belum ada kelas tujuan.</p>
+          <p className={`${PANEL} text-sm text-[var(--muted)]`}>Belum ada kelas tujuan.</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {kelasTujuan.map(({ kelas }) => {
@@ -104,11 +105,10 @@ export default function GuruJawabanPage() {
                 <button
                   key={kelas.id}
                   onClick={() => setSelectedKelasId(active ? null : kelas.id)}
-                  className="rounded-xl border bg-[#FAF6EE] p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                  style={active ? { borderColor: "#658864", boxShadow: "0 0 0 2px #65886433" } : { borderColor: "#E5E7EB" }}
+                  className={`rounded-lg border p-4 text-left transition-colors ${active ? "border-[var(--brand)] bg-[var(--tint)]" : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--tint)]"}`}
                 >
-                  <p className="font-bold text-[#111827]">{kelas.judul}</p>
-                  <p className="mt-1 text-xs text-[#64748B]">{count} siswa mengumpulkan jawaban</p>
+                  <p className="font-semibold">{kelas.judul}</p>
+                  <p className="mt-1 text-xs text-[var(--muted)]">{count} siswa mengumpulkan jawaban</p>
                 </button>
               );
             })}

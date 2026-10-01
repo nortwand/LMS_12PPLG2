@@ -1,6 +1,41 @@
 # Studify
 
-Studify adalah Learning Management System (LMS) untuk mendukung aktivitas sekolah: pengelolaan kelas, akun siswa dan guru, materi, tugas, asesmen, pengumpulan jawaban, serta pemantauan performa akademik.
+## 1. Pengertian Studify
+
+Studify adalah Learning Management System (LMS) berbasis web yang dirancang untuk mendukung kegiatan pembelajaran di sekolah secara digital. Platform ini menjadi tempat terpusat bagi admin, kepala sekolah, bagian kurikulum, guru, dan siswa untuk mengelola proses belajar mengajar.
+
+Studify membantu sekolah menggantikan proses pembelajaran yang masih manual menjadi lebih terstruktur, terintegrasi, efisien, dan mudah dipantau. Seluruh aktivitas akademik dapat dikelola dalam satu sistem, mulai dari pengaturan pengguna dan kelas hingga penyampaian materi, pelaksanaan asesmen, pengumpulan tugas, penilaian, dan pemantauan perkembangan akademik.
+
+## 2. Fitur dan Pengguna Studify
+
+Studify menyediakan fitur utama berikut:
+
+- Login dan autentikasi berdasarkan peran pengguna.
+- Dashboard khusus untuk admin, kepala sekolah, bagian kurikulum, guru, dan siswa.
+- Pengelolaan kelas serta anggota kelas.
+- Penyampaian pengumuman sekolah dan pengumuman kelas.
+- Pengunggahan dan pembagian materi pembelajaran.
+- Pembuatan, pembagian, dan pengumpulan tugas.
+- Pembuatan asesmen, soal, dan jawaban siswa.
+- Pemeriksaan jawaban serta pemberian nilai.
+- Pemantauan performa akademik siswa, kelas, mata pelajaran, dan sekolah.
+- Ekspor data nilai untuk kebutuhan administrasi.
+
+Setiap pengguna memiliki fungsi yang disesuaikan dengan kebutuhannya. Admin mengelola akun, kelas, dan data sistem. Kepala sekolah serta bagian kurikulum dapat memantau kegiatan dan performa akademik. Guru mengelola kelas, materi, tugas, dan asesmen, kemudian memeriksa hasil pekerjaan siswa. Siswa mengakses materi, mengumpulkan tugas, mengikuti asesmen, dan melihat perkembangan akademiknya.
+
+## 3. Manfaat Studify bagi Sekolah, Guru, dan Siswa
+
+### Bagi sekolah
+
+Studify membantu sekolah mengintegrasikan administrasi dan kegiatan pembelajaran ke dalam satu platform. Data menjadi lebih terpusat, proses pemantauan lebih mudah, dan informasi akademik dapat diakses secara lebih cepat serta teratur.
+
+### Bagi guru
+
+Guru dapat mengelola materi, tugas, pengumuman, dan asesmen tanpa bergantung pada proses manual yang terpisah. Pengumpulan pekerjaan, pemeriksaan jawaban, pemberian nilai, dan pemantauan aktivitas siswa menjadi lebih efisien.
+
+### Bagi siswa
+
+Siswa dapat mengakses pembelajaran dari satu tempat, memperoleh materi dan pengumuman kelas, mengumpulkan tugas, mengikuti asesmen, serta melihat hasil dan perkembangan akademiknya secara lebih jelas.
 
 A modern classroom and academic management app built with Next.js.
 
