@@ -21,15 +21,20 @@ interface NilaiRow {
 interface TabelNilaiProps {
   asesmenId: string;
   judulAsesmen: string;
+  jenisAsesmen: "KUIS" | "UJIAN";
+  mataPelajaran: string;
+  kelasId: string;
+  kelasNama: string;
   nilaiList: NilaiRow[];
   onReset?: () => void;
   readOnly?: boolean;
   basePath?: string;
 }
 
-export default function TabelNilai({ asesmenId, judulAsesmen, nilaiList, onReset, readOnly = false, basePath = "/guru/asesmen" }: TabelNilaiProps) {
+export default function TabelNilai({ asesmenId, judulAsesmen, jenisAsesmen, mataPelajaran, kelasId, kelasNama, nilaiList, onReset, readOnly = false, basePath = "/guru/asesmen" }: TabelNilaiProps) {
   const router = useRouter();
   const [downloading, setDownloading] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [resettingSubmissionId, setResettingSubmissionId] = useState<string | null>(null);
   const [resetRequest, setResetRequest] = useState<{
     type: "asesmen" | "nilai";
@@ -40,7 +45,8 @@ export default function TabelNilai({ asesmenId, judulAsesmen, nilaiList, onReset
   async function handleDownload() {
     setDownloading(true);
     try {
-      const res = await fetch(`/api/asesmen/${asesmenId}/nilai?format=xlsx`);
+      const query = new URLSearchParams({ format: "xlsx", kelasId });
+      const res = await fetch(`/api/asesmen/${asesmenId}/nilai?${query}`);
       if (!res.ok) throw new Error();
 
       const blob = await res.blob();
@@ -57,6 +63,76 @@ export default function TabelNilai({ asesmenId, judulAsesmen, nilaiList, onReset
     } finally {
       setDownloading(false);
     }
+  }
+
+  function handlePrintPdf() {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      void showAlert("Izinkan pop-up untuk membuka pratinjau cetak PDF.");
+      return;
+    }
+
+    const escapeHtml = (value: string | number) => String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+    const printedAt = new Intl.DateTimeFormat("id-ID", {
+      dateStyle: "long",
+      timeStyle: "short",
+    }).format(new Date());
+    const rows = nilaiList.map((row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${escapeHtml(row.nama)}</td>
+        <td>${escapeHtml(row.nis)}</td>
+        <td>${escapeHtml(row.kelasReferensi)}</td>
+        <td>${row.totalSoalTerjawab}</td>
+        <td>${row.nilaiObjektif}</td>
+        <td>${row.nilaiAkhir ?? "-"}</td>
+      </tr>`).join("");
+
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html>
+      <html lang="id"><head><meta charset="utf-8"><title>Rekap Nilai - ${escapeHtml(judulAsesmen)}</title>
+      <style>
+        @page { size: A4 portrait; margin: 14mm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: #17231A; font: 10pt Arial, sans-serif; }
+        h1 { margin: 0 0 5mm; font-size: 19pt; }
+        .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 8mm; margin-bottom: 7mm; }
+        .meta p { margin: 0; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #84918A; padding: 2.2mm 1.5mm; text-align: left; overflow-wrap: anywhere; }
+        th { background: #EAF0EA; font-size: 8pt; }
+        td { font-size: 8.5pt; }
+        th:first-child, td:first-child { width: 7mm; text-align: center; }
+        .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 15mm; margin-top: 18mm; page-break-inside: avoid; }
+        .signature { min-height: 29mm; text-align: center; }
+        .signature .space { height: 18mm; }
+        .signature p { margin: 0; }
+        @media print { tr { break-inside: avoid; } }
+      </style></head><body>
+      <h1>Rekap Nilai</h1>
+      <div class="meta">
+        <p><strong>Asesmen:</strong> ${escapeHtml(judulAsesmen)}</p>
+        <p><strong>Jenis:</strong> ${jenisAsesmen === "KUIS" ? "Kuis" : "Ujian Online"}</p>
+        <p><strong>Mata Pelajaran:</strong> ${escapeHtml(mataPelajaran || "-")}</p>
+        <p><strong>Kelas:</strong> ${escapeHtml(kelasNama)}</p>
+        <p><strong>Tanggal cetak:</strong> ${escapeHtml(printedAt)}</p>
+      </div>
+      <table><thead><tr><th>No.</th><th>Nama Siswa</th><th>NIS</th><th>Kelas/Jurusan</th><th>Soal Terjawab</th><th>Nilai Objektif</th><th>Nilai Akhir</th></tr></thead>
+      <tbody>${rows || "<tr><td colspan=\"7\">Belum ada siswa yang mengumpulkan.</td></tr>"}</tbody></table>
+      <div class="signatures">
+        <div class="signature"><p>Kepala Sekolah</p><div class="space"></div><p>(____________________________)</p></div>
+        <div class="signature"><p>Wakil Kepala Sekolah Bidang Kurikulum</p><div class="space"></div><p>(____________________________)</p></div>
+      </div>
+      </body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    setShowExportModal(false);
   }
 
   async function handleResetSubmission(submissionId: string) {
@@ -110,11 +186,11 @@ export default function TabelNilai({ asesmenId, judulAsesmen, nilaiList, onReset
 
   return (
     <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-bold text-[#111827]">Nilai Siswa</p>
         <div className="flex gap-2">
-          <Button size="sm" loading={downloading} onClick={handleDownload}>
-            Generate Excel
+          <Button size="sm" onClick={() => setShowExportModal(true)}>
+            Generate Nilai
           </Button>
         </div>
       </div>
@@ -187,6 +263,23 @@ export default function TabelNilai({ asesmenId, judulAsesmen, nilaiList, onReset
           </table>
         </div>
       )}
+
+      <Modal
+        open={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        title="Generate Nilai"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-[#475569]">Pilih format untuk {kelasNama}.</p>
+          <Button className="w-full" loading={downloading} onClick={() => { setShowExportModal(false); void handleDownload(); }}>
+            Unduh Excel (.xlsx)
+          </Button>
+          <Button className="w-full" variant="outline" onClick={handlePrintPdf}>
+            Cetak / Simpan PDF
+          </Button>
+        </div>
+      </Modal>
 
       <Modal
         open={resetRequest !== null}

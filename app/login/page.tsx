@@ -1,11 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 
-const BRAND = "#658864";
+/*
+  Palet (3 warna): Brand #658864, Bg #FAF6EE, Putih #FFFFFF.
+  Token sama dengan landing page. Tambahan: --border-strong (border input),
+  --link (turunan brand yang lebih gelap agar teks link terbaca), --danger (status error).
+  Dark mode memakai class "dark" di <html>, key localStorage "theme" (sama dengan landing).
+*/
+
+const STYLES = `
+.lp{
+  color-scheme:light;
+  --bg:#FAF6EE; --surface:#FFFFFF; --tint:#F2EEE4;
+  --fg:#1B261B; --muted:#5E6E5D;
+  --border:rgba(27,38,27,.12); --border-strong:rgba(27,38,27,.28);
+  --brand:#658864; --on-brand:#FFFFFF; --link:#4F6E4E;
+  --focus:#658864; --danger:#9A3B2E;
+}
+.dark .lp{
+  color-scheme:dark;
+  --bg:#141B14; --surface:#1B241B; --tint:#202B20;
+  --fg:#FFFFFF; --muted:rgba(255,255,255,.66);
+  --border:rgba(255,255,255,.12); --border-strong:rgba(255,255,255,.28);
+  --brand:#658864; --on-brand:#FFFFFF; --link:#8FB88E;
+  --focus:#8FB88E; --danger:#E8A398;
+}
+.lp *:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+.lp a,.lp button,.lp input,.lp textarea{transition:background-color .12s,color .12s,border-color .12s,opacity .12s}
+`;
+
+const INPUT =
+  "h-11 w-full rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-base text-[var(--fg)] placeholder:text-[var(--muted)] focus:border-[var(--brand)] md:text-sm";
+const BTN_PRIMARY =
+  "flex h-11 w-full items-center justify-center rounded-md bg-[var(--brand)] text-sm font-medium text-[var(--on-brand)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60";
+const LINK_BTN =
+  "inline-flex h-10 cursor-pointer items-center text-sm font-medium text-[var(--link)] underline-offset-4 hover:underline";
+const MUTED_BTN =
+  "inline-flex h-10 cursor-pointer items-center text-sm text-[var(--muted)] hover:text-[var(--fg)]";
 
 type Portal = "ADMIN" | "PETUGAS" | "SISWA";
 type View = "LOGIN" | "LAPOR" | "OTP" | "PASSWORD_BARU" | "SUKSES";
@@ -15,9 +49,93 @@ const PORTAL_CONFIG: Record<
   { label: string; title: string; identifierLabel: string; identifierPlaceholder: string }
 > = {
   ADMIN: { label: "Admin", title: "Login Sebagai Admin", identifierLabel: "Email", identifierPlaceholder: "Email" },
-  PETUGAS: { label: "Petugas", title: "Login Sebagai Petugas", identifierLabel: "NIK", identifierPlaceholder: "Nik" },
-  SISWA: { label: "Siswa", title: "Login Sebagai Siswa", identifierLabel: "NIS", identifierPlaceholder: "Nis" },
+  PETUGAS: { label: "Petugas", title: "Login Sebagai Petugas", identifierLabel: "NIK", identifierPlaceholder: "NIK" },
+  SISWA: { label: "Siswa", title: "Login Sebagai Siswa", identifierLabel: "NIS", identifierPlaceholder: "NIS" },
 };
+
+function ThemeIcon({ sun }: { sun: boolean }) {
+  return sun ? (
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </svg>
+  ) : (
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
+function ThemeToggle() {
+  const [mounted, setMounted] = useState(false);
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem("theme");
+    } catch {}
+    const isDark =
+      saved === "dark" ||
+      (saved === null && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+    setDark(isDark);
+    setMounted(true);
+  }, []);
+
+  function toggle() {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try {
+      localStorage.setItem("theme", next ? "dark" : "light");
+    } catch {}
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={mounted && dark ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
+      className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] text-[var(--fg)] hover:bg-[var(--tint)]"
+    >
+      <ThemeIcon sun={mounted && dark} />
+    </button>
+  );
+}
+
+function Heading({ title, desc }: { title: string; desc?: string }) {
+  return (
+    <div>
+      <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+      {desc && <p className="mt-1 text-sm leading-relaxed text-[var(--muted)]">{desc}</p>}
+    </div>
+  );
+}
+
+function Field({
+  id,
+  label,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { id: string; label: string }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
+        {label}
+      </label>
+      <input id={id} className={INPUT} {...props} />
+    </div>
+  );
+}
+
+function ErrorText({ message, center }: { message: string; center?: boolean }) {
+  if (!message) return null;
+  return (
+    <p role="alert" className={`text-sm text-[var(--danger)] ${center ? "text-center" : ""}`}>
+      {message}
+    </p>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -186,113 +304,94 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE]" style={{ fontFamily: "Inter, sans-serif" }}>
-      {/* NAVBAR */}
-      <header className="border-b border-black/5 bg-[#FAF6EE]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative h-8 w-8 flex-shrink-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#658864] text-xs font-black text-white">S</div>
-            </div>
-            <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Studify
-            </span>
-          </Link>
+    <div
+      className="lp flex min-h-screen flex-col bg-[var(--bg)] text-[var(--fg)]"
+      style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+    >
+      <style>{STYLES}</style>
 
-          <Link
-            href="/"
-            className="rounded-full px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105"
-            style={{ background: BRAND }}
-          >
-            Back
+      {/* HEADER */}
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg)]">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5">
+          <Link href="/" className="text-base font-semibold tracking-tight">
+            Studify
           </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              href="/"
+              className="flex h-10 items-center rounded-md border border-[var(--border)] px-4 text-sm font-medium hover:bg-[var(--tint)]"
+            >
+              Back
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* HERO + CARD */}
-      <section
-        className="relative flex min-h-[640px] items-center justify-center bg-cover bg-center px-6 py-16"
-        style={{
-          backgroundImage:
-            "linear-gradient(180deg, rgba(17,24,39,0.45), rgba(17,24,39,0.65)), url('/hero-sekolah.jpg')",
-          backgroundColor: "#1F2937",
-        }}
-      >
-        <h1
-          className="absolute top-16 text-center text-2xl font-bold text-white md:text-3xl opacity-0 animate-[fadeUp_0.6s_ease-out_forwards]"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", animationDelay: "0.1s" }}
-        >
-          Selamat Datang di Studify
-        </h1>
-
-        <div className="mt-20 w-full max-w-sm rounded-2xl bg-[#FAF6EE] p-8 shadow-2xl opacity-0 animate-[fadeUp_0.6s_ease-out_forwards]">
-          {/* header logo + tagline, tampil di semua view */}
-          <div className="flex flex-col items-center text-center">
-            <div className="relative h-8 w-8 flex-shrink-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#658864] text-xs font-black text-white">S</div>
-            </div>
-            <p className="mt-2 text-base font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Studify
-            </p>
-            <p className="mt-1 text-sm font-semibold text-[#111827]">Ayo Belajar Lebih Cerdas Bersama Studify</p>
-          </div>
-
+      {/* KONTEN */}
+      <main className="flex flex-1 items-center justify-center px-5 py-10">
+        <div className="w-full max-w-sm rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8">
           {/* ============ VIEW: LOGIN ============ */}
           {view === "LOGIN" && (
             <>
-              <p className="mt-6 text-xs font-semibold text-[#6B7280]">Portal Administrasi</p>
-              <div className="mt-2 grid grid-cols-3 gap-2">
+              <Heading
+                title="Selamat datang di Studify"
+                desc="Ayo belajar lebih cerdas bersama Studify."
+              />
+
+              <p className="mt-6 text-xs font-medium text-[var(--muted)]">Portal Administrasi</p>
+              <div
+                role="group"
+                aria-label="Portal Administrasi"
+                className="mt-2 grid grid-cols-3 gap-1 rounded-md border border-[var(--border)] p-1"
+              >
                 {(Object.keys(PORTAL_CONFIG) as Portal[]).map((key) => (
                   <button
                     key={key}
                     type="button"
+                    aria-pressed={portal === key}
                     onClick={() => handlePortalChange(key)}
-                    className="cursor-pointer rounded-lg border py-2 text-sm font-medium transition-colors"
-                    style={
+                    className={`h-10 cursor-pointer rounded-[4px] text-sm font-medium ${
                       portal === key
-                        ? { background: BRAND, borderColor: BRAND, color: "white" }
-                        : { borderColor: "#D1D5DB", color: "#374151" }
-                    }
+                        ? "bg-[var(--brand)] text-[var(--on-brand)]"
+                        : "text-[var(--muted)] hover:text-[var(--fg)]"
+                    }`}
                   >
                     {PORTAL_CONFIG[key].label}
                   </button>
                 ))}
               </div>
 
-              <p className="mt-6 text-xs text-[#9CA3AF]">Login Sebagai {config.label}</p>
-              <p className="text-sm font-bold text-[#111827]">{config.title}</p>
-
-              <form onSubmit={handleLoginSubmit} className="mt-4 space-y-3">
-                <input
+              <form onSubmit={handleLoginSubmit} aria-label={config.title} className="mt-5 space-y-4">
+                <Field
+                  id="login-identifier"
+                  label={config.identifierLabel}
                   type={portal === "ADMIN" ? "email" : "text"}
                   required
+                  autoComplete="username"
                   placeholder={config.identifierPlaceholder}
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
-                  className="w-full rounded-lg border border-[#D1D5DB] px-4 py-2.5 text-sm outline-none focus:border-[#658864]"
                 />
-                <input
+                <Field
+                  id="login-password"
+                  label="Password"
                   type="password"
                   required
+                  autoComplete="current-password"
                   placeholder="Password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full rounded-lg border border-[#D1D5DB] px-4 py-2.5 text-sm outline-none focus:border-[#658864]"
                 />
 
-                {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+                <ErrorText message={error} />
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02] disabled:opacity-60"
-                  style={{ background: BRAND }}
-                >
+                <button type="submit" disabled={loading} className={BTN_PRIMARY}>
                   {loading ? "Memproses..." : "Masuk"}
                 </button>
 
                 {portal !== "ADMIN" && (
-                  <p className="text-center text-xs text-[#9CA3AF]">
+                  <p className="text-center text-sm text-[var(--muted)]">
                     Lupa Password?{" "}
                     <button
                       type="button"
@@ -300,8 +399,7 @@ export default function LoginPage() {
                         resetLupaState();
                         setView("LAPOR");
                       }}
-                      className="cursor-pointer font-semibold hover:underline"
-                      style={{ color: BRAND }}
+                      className={LINK_BTN}
                     >
                       Ubah Password
                     </button>
@@ -314,77 +412,72 @@ export default function LoginPage() {
           {/* ============ VIEW: LAPOR (step 1) ============ */}
           {view === "LAPOR" && (
             <>
-              <p className="mt-6 text-xs font-semibold text-[#6B7280]">Buat Laporan Password</p>
-              <p className="text-sm font-bold text-[#111827]">
-                Gunakan NIS/NIK, email, tanggal lahir, dan alasan untuk ubah password
-              </p>
+              <Heading
+                title="Buat laporan password"
+                desc="Gunakan NIS/NIK, email, tanggal lahir, dan alasan untuk ubah password."
+              />
 
               {info ? (
-                <div className="mt-4 rounded-lg bg-[#F0FDF4] p-4 text-center">
-                  <p className="text-sm text-[#166534]">{info}</p>
-                  <button
-                    type="button"
-                    onClick={kembaliKeLogin}
-                    className="mt-3 cursor-pointer text-xs font-semibold hover:underline"
-                    style={{ color: BRAND }}
-                  >
+                <div role="status" className="mt-6 rounded-md border border-[var(--border)] bg-[var(--tint)] p-4">
+                  <p className="text-sm leading-relaxed">{info}</p>
+                  <button type="button" onClick={kembaliKeLogin} className={`${LINK_BTN} mt-2`}>
                     Kembali ke Login
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleLaporSubmit} className="mt-4 space-y-3">
-                  <input
+                <form onSubmit={handleLaporSubmit} className="mt-6 space-y-4">
+                  <Field
+                    id="lapor-identifier"
+                    label="NIS / NIK"
                     required
                     placeholder="NIS / NIK"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    className="w-full rounded-lg border border-[#D1D5DB] px-4 py-2.5 text-sm outline-none focus:border-[#658864]"
                   />
-                  <input
+                  <Field
+                    id="lapor-email"
+                    label="Email"
                     type="email"
                     required
+                    autoComplete="email"
                     placeholder="Email"
                     value={lupaEmail}
                     onChange={(e) => setLupaEmail(e.target.value)}
-                    className="w-full rounded-lg border border-[#D1D5DB] px-4 py-2.5 text-sm outline-none focus:border-[#658864]"
                   />
-                  <input
+                  <Field
+                    id="lapor-tanggal-lahir"
+                    label="Tanggal lahir"
                     type="date"
                     required
                     value={tanggalLahir}
                     onChange={(e) => setTanggalLahir(e.target.value)}
-                    className="w-full rounded-lg border border-[#D1D5DB] px-4 py-2.5 text-sm outline-none focus:border-[#658864]"
                   />
-                  <textarea
-                    required
-                    placeholder="Alasan lupa password"
-                    value={alasan}
-                    onChange={(e) => setAlasan(e.target.value)}
-                    rows={3}
-                    className="w-full resize-none rounded-lg border border-[#D1D5DB] px-4 py-2.5 text-sm outline-none focus:border-[#658864]"
-                  />
+                  <div>
+                    <label htmlFor="lapor-alasan" className="mb-1.5 block text-sm font-medium">
+                      Alasan lupa password
+                    </label>
+                    <textarea
+                      id="lapor-alasan"
+                      required
+                      placeholder="Alasan lupa password"
+                      value={alasan}
+                      onChange={(e) => setAlasan(e.target.value)}
+                      rows={3}
+                      className="w-full resize-none rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2.5 text-base text-[var(--fg)] placeholder:text-[var(--muted)] focus:border-[var(--brand)] md:text-sm"
+                    />
+                  </div>
 
-                  {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+                  <ErrorText message={error} />
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02] disabled:opacity-60"
-                    style={{ background: BRAND }}
-                  >
+                  <button type="submit" disabled={loading} className={BTN_PRIMARY}>
                     {loading ? "Mengirim..." : "Buat Laporan"}
                   </button>
 
-                  <div className="flex items-center justify-between text-xs text-[#9CA3AF]">
-                    <button type="button" onClick={kembaliKeLogin} className="cursor-pointer hover:underline">
+                  <div className="flex items-center justify-between">
+                    <button type="button" onClick={kembaliKeLogin} className={MUTED_BTN}>
                       Kembali ke login
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setView("OTP")}
-                      className="cursor-pointer font-semibold hover:underline"
-                      style={{ color: BRAND }}
-                    >
+                    <button type="button" onClick={() => setView("OTP")} className={LINK_BTN}>
                       Sudah punya kode OTP?
                     </button>
                   </div>
@@ -396,60 +489,56 @@ export default function LoginPage() {
           {/* ============ VIEW: OTP (step 2) ============ */}
           {view === "OTP" && (
             <>
-              <p className="mt-6 text-xs font-semibold text-[#6B7280]">Ubah Password</p>
-              <p className="text-sm font-bold text-[#111827]">
-                Ketik NIS/NIK lalu masukkan kode OTP 4 digit yang dikirim admin melalui email
-              </p>
+              <Heading
+                title="Ubah password"
+                desc="Ketik NIS/NIK lalu masukkan kode OTP 4 digit yang dikirim admin melalui email."
+              />
 
-              <form onSubmit={handleVerifyOtp} className="mt-4 space-y-3">
-                <input
+              <form onSubmit={handleVerifyOtp} className="mt-6 space-y-4">
+                <Field
+                  id="otp-identifier"
+                  label="NIS / NIK"
                   required
                   placeholder="NIS / NIK"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  className="w-full rounded-lg border border-[#D1D5DB] px-4 py-2.5 text-sm outline-none focus:border-[#658864]"
                 />
 
-                <div className="flex justify-center gap-3">
-                  {otpDigits.map((digit, i) => (
-                    <input
-                      key={i}
-                      id={`otp-${i}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(i, e.target.value)}
-                      className="h-12 w-12 rounded-lg border border-[#D1D5DB] text-center text-lg font-bold outline-none focus:border-[#658864]"
-                    />
-                  ))}
+                <div role="group" aria-labelledby="otp-label">
+                  <span id="otp-label" className="mb-1.5 block text-sm font-medium">
+                    Kode OTP
+                  </span>
+                  <div className="flex gap-2">
+                    {otpDigits.map((digit, i) => (
+                      <input
+                        key={i}
+                        id={`otp-${i}`}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        aria-label={`Digit OTP ${i + 1}`}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(i, e.target.value)}
+                        className="h-12 w-12 rounded-md border border-[var(--border-strong)] bg-[var(--surface)] text-center text-lg font-semibold tabular-nums text-[var(--fg)] focus:border-[var(--brand)]"
+                      />
+                    ))}
+                  </div>
                 </div>
 
-                {error && <p className="text-center text-xs font-medium text-red-500">{error}</p>}
+                <ErrorText message={error} />
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02] disabled:opacity-60"
-                  style={{ background: BRAND }}
-                >
+                <button type="submit" disabled={loading} className={BTN_PRIMARY}>
                   {loading ? "Memverifikasi..." : "Lanjut"}
                 </button>
 
-                <p className="text-center text-xs text-[#9CA3AF]">
-                  <button type="button" onClick={kembaliKeLogin} className="cursor-pointer hover:underline">
+                <div className="flex items-center justify-between">
+                  <button type="button" onClick={kembaliKeLogin} className={MUTED_BTN}>
                     Kembali ke login
                   </button>
-                  {" · "}
-                  <button
-                    type="button"
-                    onClick={() => setView("LAPOR")}
-                    className="cursor-pointer font-semibold hover:underline"
-                    style={{ color: BRAND }}
-                  >
+                  <button type="button" onClick={() => setView("LAPOR")} className={LINK_BTN}>
                     Belum lapor?
                   </button>
-                </p>
+                </div>
               </form>
             </>
           )}
@@ -457,71 +546,59 @@ export default function LoginPage() {
           {/* ============ VIEW: PASSWORD BARU (step 3) ============ */}
           {view === "PASSWORD_BARU" && (
             <>
-              <p className="mt-6 text-xs font-semibold text-[#6B7280]">Portal Administrasi</p>
-              <p className="text-sm font-bold text-[#111827]">Buat Password Baru</p>
+              <Heading title="Buat password baru" desc="Gunakan password minimal 6 karakter." />
 
-              <form onSubmit={handleResetPassword} className="mt-4 space-y-3">
-                <input
+              <form onSubmit={handleResetPassword} className="mt-6 space-y-4">
+                <Field
+                  id="password-baru"
+                  label="Password baru"
                   type="password"
                   required
+                  autoComplete="new-password"
                   placeholder="Password Baru"
                   value={passwordBaru}
                   onChange={(e) => setPasswordBaru(e.target.value)}
-                  className="w-full rounded-lg border border-[#D1D5DB] px-4 py-2.5 text-sm outline-none focus:border-[#658864]"
                 />
 
-                {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+                <ErrorText message={error} />
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02] disabled:opacity-60"
-                  style={{ background: BRAND }}
-                >
+                <button type="submit" disabled={loading} className={BTN_PRIMARY}>
                   {loading ? "Menyimpan..." : "Buat Password"}
                 </button>
 
-                <p className="text-center text-xs text-[#9CA3AF]">
-                  <button type="button" onClick={kembaliKeLogin} className="cursor-pointer hover:underline">
+                <div>
+                  <button type="button" onClick={kembaliKeLogin} className={MUTED_BTN}>
                     Kembali ke login
                   </button>
-                </p>
+                </div>
               </form>
             </>
           )}
 
           {/* ============ VIEW: SUKSES ============ */}
           {view === "SUKSES" && (
-            <div className="mt-6 text-center">
-              <div
-                className="mx-auto flex h-12 w-12 items-center justify-center rounded-full"
-                style={{ background: "#DCFCE7" }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" className="h-6 w-6">
+            <div className="text-center" role="status">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-[var(--brand)] text-[var(--link)]">
+                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="mt-3 text-sm font-bold text-[#111827]">Password Berhasil Diubah</p>
-              <p className="mt-1 text-xs text-[#6B7280]">Silakan login dengan password baru anda.</p>
-              <button
-                type="button"
-                onClick={kembaliKeLogin}
-                className="mt-4 w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
-                style={{ background: BRAND }}
-              >
+              <h1 className="mt-4 text-xl font-semibold tracking-tight">Password berhasil diubah</h1>
+              <p className="mt-1 text-sm text-[var(--muted)]">Silakan login dengan password baru Anda.</p>
+              <button type="button" onClick={kembaliKeLogin} className={`${BTN_PRIMARY} mt-6`}>
                 Kembali ke Login
               </button>
             </div>
           )}
         </div>
-      </section>
+      </main>
 
       {/* FOOTER */}
-      <footer className="py-12 text-center text-white" style={{ background: BRAND }}>
-        <p className="text-lg font-bold">Studify</p>
-        <p className="mt-10 border-t border-white/20 pt-6 text-xs text-white/80">
-          © 2026 Studify. All Rights Reserved.
-        </p>
+      <footer className="mt-auto border-t border-[var(--border)]">
+        <div className="mx-auto flex max-w-5xl flex-col gap-2 px-5 py-6 text-xs text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-medium text-[var(--fg)]">Studify</span>
+          <span>© 2026 Studify. All Rights Reserved.</span>
+        </div>
       </footer>
     </div>
   );

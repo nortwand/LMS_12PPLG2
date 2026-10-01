@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Modal from "./ui/Modal";
-import { Input, Select, Textarea } from "./ui/Input";
+import { Input, Textarea } from "./ui/Input";
 import Button from "./ui/Button";
 import Badge from "./ui/Badge";
 import { MateriData } from "./MateriCard";
@@ -18,16 +18,18 @@ interface ModalMateriProps {
   onSuccess: () => void;
   mode: "create" | "edit";
   initialData?: MateriData | null;
+  defaultKelasId?: string;
 }
 
-export default function ModalMateri({ open, onClose, onSuccess, mode, initialData }: ModalMateriProps) {
+export default function ModalMateri({ open, onClose, onSuccess, mode, initialData, defaultKelasId }: ModalMateriProps) {
   const [judul, setJudul] = useState("");
-  const [tipe, setTipe] = useState<"PDF" | "LINK">("LINK");
+  const [tipe, setTipe] = useState<MateriData["tipe"]>("LINK");
   const [url, setUrl] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [kelasList, setKelasList] = useState<KelasOption[]>([]);
   const [selectedKelasIds, setSelectedKelasIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -45,19 +47,41 @@ export default function ModalMateri({ open, onClose, onSuccess, mode, initialDat
       setTipe(initialData.tipe);
       setUrl(initialData.url);
       setDeskripsi(initialData.deskripsi ?? "");
-      setSelectedKelasIds((initialData.kelasTujuan ?? []).map((kt: any) => kt.kelas.id).filter(Boolean));
+      setSelectedKelasIds((initialData.kelasTujuan ?? []).map((kt) => kt.kelas.id).filter(Boolean));
     } else {
       setJudul("");
       setTipe("LINK");
       setUrl("");
       setDeskripsi("");
-      setSelectedKelasIds([]);
+      setSelectedKelasIds(defaultKelasId ? [defaultKelasId] : []);
     }
     setError("");
-  }, [open, mode, initialData]);
+  }, [open, mode, initialData, defaultKelasId]);
 
   function toggleKelas(id: string) {
     setSelectedKelasIds((prev) => (prev.includes(id) ? prev.filter((k) => k !== id) : [...prev, id]));
+  }
+
+  async function handleUpload(file: File) {
+    setUploading(true);
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload?kategori=materi", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Lampiran gagal diunggah.");
+        return;
+      }
+
+      setUrl(data.url);
+      setTipe(file.type.startsWith("image/") ? "FOTO" : file.type === "application/pdf" ? "PDF" : "FILE");
+    } catch {
+      setError("Lampiran gagal diunggah. Coba lagi.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -74,6 +98,17 @@ export default function ModalMateri({ open, onClose, onSuccess, mode, initialDat
       const isEdit = mode === "edit";
       const urlEndpoint = isEdit ? `/api/materi/${initialData?.id}` : "/api/materi";
       const method = isEdit ? "PATCH" : "POST";
+
+      if (tipe !== "LINK" && !url) {
+        setError("Pilih file yang akan diunggah.");
+        setLoading(false);
+        return;
+      }
+      if (tipe === "LINK" && !/^https?:\/\//i.test(url.trim())) {
+        setError("Masukkan tautan dengan alamat http:// atau https://.");
+        setLoading(false);
+        return;
+      }
 
       const res = await fetch(urlEndpoint, {
         method,
@@ -102,25 +137,50 @@ export default function ModalMateri({ open, onClose, onSuccess, mode, initialDat
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="Judul Materi" value={judul} onChange={(e) => setJudul(e.target.value)} required />
 
-        <Select label="Tipe" value={tipe} onChange={(e) => setTipe(e.target.value as "PDF" | "LINK")}>
-          <option value="LINK">Link</option>
-          <option value="PDF">PDF</option>
-        </Select>
+        <label className="block text-xs font-semibold text-[#374151]">
+          Sumber Materi
+          <select
+            className="mt-1 w-full border border-[#D1D5DB] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#658864]"
+            value={tipe === "LINK" ? "LINK" : "FILE"}
+            onChange={(event) => {
+              const nextTipe = event.target.value === "LINK" ? "LINK" : "FILE";
+              setTipe(nextTipe);
+              setUrl("");
+            }}
+          >
+            <option value="LINK">Tautan</option>
+            <option value="FILE">Upload file atau foto</option>
+          </select>
+        </label>
 
-        <Input
-          label={tipe === "PDF" ? "URL File PDF" : "URL Link"}
-          placeholder="https://..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          required
-        />
+        {tipe === "LINK" ? (
+          <Input label="Tautan" placeholder="https://..." value={url} onChange={(e) => setUrl(e.target.value)} required />
+        ) : (
+          <label className="block text-xs font-semibold text-[#374151]">
+            Lampiran
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.ppt,.pptx,image/jpeg,image/png,image/webp"
+              className="mt-1 block w-full border border-[#D1D5DB] bg-white px-3 py-2 text-sm font-normal"
+              disabled={uploading}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void handleUpload(file);
+                event.target.value = "";
+              }}
+            />
+            <span className="mt-1 block font-normal text-[#64748B]">
+              {uploading ? "Mengunggah..." : url ? "File terlampir. Pilih ulang untuk mengganti." : "PDF, dokumen, presentasi, atau foto. Maksimal 10 MB."}
+            </span>
+          </label>
+        )}
 
         <Textarea label="Deskripsi (opsional)" value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} />
 
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Kelas Tujuan</label>
           <select
-            className="w-full rounded-lg border border-[#D1D5DB] px-3.5 py-2.5 text-sm outline-none focus:border-[#658864]"
+            className="w-full border border-[#D1D5DB] bg-white px-3.5 py-2.5 text-sm outline-none focus:border-[#658864]"
             value=""
             onChange={(e) => e.target.value && toggleKelas(e.target.value)}
           >
@@ -153,7 +213,7 @@ export default function ModalMateri({ open, onClose, onSuccess, mode, initialDat
 
         {error && <p className="text-xs font-medium text-red-500">{error}</p>}
 
-        <Button type="submit" loading={loading} className="w-full">
+        <Button type="submit" loading={loading} disabled={uploading} className="w-full">
           {mode === "create" ? "Upload Materi" : "Simpan Perubahan"}
         </Button>
       </form>

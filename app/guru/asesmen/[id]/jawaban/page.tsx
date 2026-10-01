@@ -121,6 +121,10 @@ export default function GuruJawabanPage() {
           <TabelNilai
             asesmenId={asesmenId}
             judulAsesmen={hasil.asesmen.judul}
+            jenisAsesmen={hasil.asesmen.tipe}
+            mataPelajaran={hasil.asesmen.mapel ?? "-"}
+            kelasId={selectedKelasId}
+            kelasNama={kelasTujuan.find((item) => item.kelas.id === selectedKelasId)?.kelas.judul ?? "-"}
             nilaiList={selectedRows}
             onReset={loadData}
           />

@@ -7,12 +7,17 @@ import Badge from "@/components/ui/Badge";
 import PengumumanCard, { PengumumanData } from "@/components/PengumumanCard";
 import TugasCard, { TugasData } from "@/components/TugasCard";
 import ModalPengumuman from "@/components/ModalPengumuman";
+import Modal from "@/components/ui/Modal";
+import { Select } from "@/components/ui/Input";
 import ModalBuatAsesmen from "@/components/Modalbuatasesmen";
 import ModalEditAsesmen from "@/components/ModalEditAsesmen";
 import ModalTugas from "@/components/ModalTugas";
 import ModalKirimTugas from "@/components/ModalKirimTugas";
 import ModalKirimAsesmen from "@/components/ModalKirimAsesmen";
 import ModalKirimPengumuman from "@/components/ModalKirimPengumuman";
+import ModalMateri from "@/components/Modalmateri";
+import MateriCard, { MateriData } from "@/components/MateriCard";
+import ClassFeedFilter, { filterClassFeed, type ClassFeedType } from "@/components/ClassFeedFilter";
 import type { AsesmenData } from "@/components/Asesmencard";
 import { showAlert, showConfirm } from "@/lib/dialog";
 
@@ -28,7 +33,7 @@ interface GuruDiKelas {
   mapel: { id: string; nama: string };
 }
 interface FeedItem {
-  tipe: "PENGUMUMAN" | "ASESMEN" | "TUGAS";
+  tipe: "PENGUMUMAN" | "ASESMEN" | "TUGAS" | "MATERI";
   timestamp: string;
   data: any;
 }
@@ -53,10 +58,12 @@ export default function GuruKelasDetailPage() {
   const [error, setError] = useState("");
 
   const [section, setSection] = useState<"SISWA" | "GURU" | null>(null);
+  const [feedFilter, setFeedFilter] = useState<ClassFeedType>("ALL");
   const [expandedRombel, setExpandedRombel] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const [showModalPengumuman, setShowModalPengumuman] = useState(false);
+  const [contentType, setContentType] = useState<"PENGUMUMAN" | "MATERI" | null>(null);
   const [editingPengumuman, setEditingPengumuman] = useState<PengumumanData | null>(null);
   const [showModalAsesmen, setShowModalAsesmen] = useState(false);
   const [asesmenFixedTipe, setAsesmenFixedTipe] = useState<"KUIS" | "UJIAN">("KUIS");
@@ -64,6 +71,8 @@ export default function GuruKelasDetailPage() {
   const [showModalTugas, setShowModalTugas] = useState(false);
   const [editingTugas, setEditingTugas] = useState<TugasData | null>(null);
   const [sendingTugas, setSendingTugas] = useState<TugasData | null>(null);
+  const [showModalMateri, setShowModalMateri] = useState(false);
+  const [editingMateri, setEditingMateri] = useState<MateriData | null>(null);
   const [sendingAsesmen, setSendingAsesmen] = useState<AsesmenData | null>(null);
   const [sendingPengumuman, setSendingPengumuman] = useState<PengumumanData | null>(null);
   const [openAsesmenOptionsId, setOpenAsesmenOptionsId] = useState<string | null>(null);
@@ -152,7 +161,25 @@ export default function GuruKelasDetailPage() {
     loadKelas();
   }
 
+  function openEditMateri(materi: MateriData) {
+    setEditingMateri(materi);
+    setShowModalMateri(true);
+  }
+
+  async function handleDeleteMateri(id: string) {
+    if (!(await showConfirm("Hapus materi ini?"))) return;
+    const res = await fetch(`/api/materi/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      await showAlert(data?.error ?? "Materi gagal dihapus.");
+      return;
+    }
+    loadKelas();
+  }
+
   function handleEditPengumuman(data: PengumumanData) {
+    setShowModalPengumuman(false);
+    setContentType(null);
     setEditingPengumuman(data);
   }
   async function handleDeletePengumuman(id: string) {
@@ -187,37 +214,34 @@ export default function GuruKelasDetailPage() {
     acc[label].push(gm);
     return acc;
   }, {});
+  const visibleFeed = filterClassFeed(kelas.feed, feedFilter);
 
   return (
     <div>
-      <div className="overflow-hidden rounded-2xl text-white shadow-sm" style={{ background: BRAND }}>
-        <div className="flex flex-wrap items-start justify-between gap-3 p-5">
-          <div>
-            <p className="text-lg font-bold">{kelas.judul}</p>
-            {kelas.deskripsi && <p className="mt-1 text-sm text-white/85">&quot;{kelas.deskripsi}&quot;</p>}
+      <section className="border-b border-[#D8DEE6] pb-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase text-[#64748B]">Ringkasan kelas</p>
+            <h1 className="mt-1 break-words text-2xl font-bold text-[#17231A]">{kelas.judul}</h1>
+            {kelas.deskripsi && <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm text-[#475569]">{kelas.deskripsi}</p>}
           </div>
-          <div className="rounded-xl bg-[#FAF6EE]/15 px-3 py-2 text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-white/80">Kode Kelas</p>
-            <p className="text-sm font-bold">{kelas.inviteToken}</p>
-            <button onClick={handleCopyInvite} className="mt-1 flex items-center gap-1 text-[11px] font-medium text-white/90 hover:underline">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3">
-                <rect x="9" y="9" width="12" height="12" rx="2" />
-                <path d="M5 15V5a2 2 0 0 1 2-2h10" />
-              </svg>
-              {copied ? "Tersalin!" : "Salin Link Undangan"}
+          <div className="w-full border border-[#D8DEE6] bg-white p-3 sm:w-auto sm:min-w-56">
+            <p className="text-[10px] font-semibold uppercase text-[#64748B]">Kode kelas</p>
+            <p className="mt-1 break-all text-sm font-bold text-[#17231A]">{kelas.inviteToken}</p>
+            <button onClick={handleCopyInvite} className="mt-2 text-xs font-semibold text-[#365C3A] hover:underline">
+              {copied ? "Tersalin" : "Salin link undangan"}
             </button>
           </div>
         </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Button variant={section === "SISWA" ? "primary" : "outline"} onClick={() => setSection(section === "SISWA" ? null : "SISWA")}>
-          Lihat Deretan Siswa
-        </Button>
-        <Button variant={section === "GURU" ? "primary" : "outline"} onClick={() => setSection(section === "GURU" ? null : "GURU")}>
-          Lihat Deretan Guru
-        </Button>
-      </div>
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:flex">
+          <Button className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "SISWA" ? "primary" : "outline"} onClick={() => setSection(section === "SISWA" ? null : "SISWA")}>
+            Siswa ({kelas.siswa.length})
+          </Button>
+          <Button className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "GURU" ? "primary" : "outline"} onClick={() => setSection(section === "GURU" ? null : "GURU")}>
+            Guru ({kelas.guruMapel.length})
+          </Button>
+        </div>
+      </section>
 
       {section === "SISWA" && (
         <div className="mt-4 space-y-3">
@@ -227,7 +251,7 @@ export default function GuruKelasDetailPage() {
             Object.entries(siswaGrouped).map(([label, list]) => {
               const isOpen = expandedRombel === label;
               return (
-                <div key={label} className="overflow-hidden rounded-2xl border border-black/5 bg-[#FAF6EE] shadow-sm">
+                <div key={label} className="overflow-hidden border border-[#D8DEE6] bg-white">
                   <button onClick={() => setExpandedRombel(isOpen ? null : label)} className="flex w-full cursor-pointer items-center justify-between px-5 py-3.5 text-left">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-bold text-[#111827]">{label}</p>
@@ -278,7 +302,7 @@ export default function GuruKelasDetailPage() {
                 <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{mapel}</p>
                 <div className="space-y-2">
                   {list.map((gm) => (
-                    <div key={gm.id} className="flex items-center gap-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3 shadow-sm">
+                    <div key={gm.id} className="flex items-center gap-3 border-b border-[#E2E8F0] bg-white p-3 last:border-0">
                       <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
                         {gm.guru.fotoProfil ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -299,9 +323,9 @@ export default function GuruKelasDetailPage() {
 
       {section === null && (
         <>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => setShowModalPengumuman(true)}>
-              + Buat Pengumuman
+          <div className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <Button size="sm" onClick={() => { setContentType(null); setShowModalPengumuman(true); }}>
+              + Buat Konten
             </Button>
             <Button size="sm" variant="outline" onClick={openBuatQuiz}>
               + Buat Quiz
@@ -314,11 +338,14 @@ export default function GuruKelasDetailPage() {
             </Button>
           </div>
 
+          <ClassFeedFilter value={feedFilter} onChange={setFeedFilter} />
           <div className="mt-4 space-y-3">
         {kelas.feed.length === 0 ? (
           <p className="text-sm text-[#9CA3AF]">Belum ada aktivitas di kelas ini.</p>
+        ) : visibleFeed.length === 0 ? (
+          <p className="border border-dashed border-[#CBD5E1] p-4 text-sm text-[#64748B]">Tidak ada aktivitas dengan filter ini.</p>
         ) : (
-          kelas.feed.map((item, i) => {
+          visibleFeed.map((item, i) => {
             if (item.tipe === "PENGUMUMAN") {
               return (
                 <PengumumanCard
@@ -341,6 +368,17 @@ export default function GuruKelasDetailPage() {
                   onEdit={openEditTugas}
                   onDelete={handleDeleteTugas}
                   onSend={setSendingTugas}
+                />
+              );
+            }
+            if (item.tipe === "MATERI") {
+              return (
+                <MateriCard
+                  key={`m-${i}`}
+                  data={item.data}
+                  isEditable={me?.id === item.data.guru?.id}
+                  onEdit={openEditMateri}
+                  onDelete={handleDeleteMateri}
                 />
               );
             }
@@ -402,10 +440,11 @@ export default function GuruKelasDetailPage() {
       )}
 
       <ModalPengumuman
-        open={showModalPengumuman || !!editingPengumuman}
+        open={!!editingPengumuman || (showModalPengumuman && contentType === "PENGUMUMAN")}
         onClose={() => {
           setShowModalPengumuman(false);
           setEditingPengumuman(null);
+          setContentType(null);
         }}
         onSuccess={loadKelas}
         mode={editingPengumuman ? "edit" : "create"}
@@ -429,6 +468,38 @@ export default function GuruKelasDetailPage() {
         initialData={editingTugas as any}
         defaultKelasId={kelasId}
       />
+      <ModalMateri
+        open={!!editingMateri || (showModalMateri && contentType === "MATERI")}
+        onClose={() => {
+          setShowModalMateri(false);
+          setEditingMateri(null);
+          setShowModalPengumuman(false);
+          setContentType(null);
+        }}
+        onSuccess={loadKelas}
+        mode={editingMateri ? "edit" : "create"}
+        initialData={editingMateri}
+        defaultKelasId={kelasId}
+      />
+
+      <Modal
+        open={showModalPengumuman && contentType === null}
+        onClose={() => setShowModalPengumuman(false)}
+        title="Buat Konten"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4">
+          <Select label="Jenis Konten" placeholder="Pilih jenis konten" value="" onChange={(event) => {
+            const selected = event.target.value as "PENGUMUMAN" | "MATERI";
+            setContentType(selected);
+            if (selected === "MATERI") setShowModalMateri(true);
+          }}>
+            <option value="PENGUMUMAN">Pengumuman</option>
+            <option value="MATERI">Materi</option>
+          </Select>
+          <p className="text-xs text-[#64748B]">Pilih jenis konten untuk kelas ini.</p>
+        </div>
+      </Modal>
       <ModalEditAsesmen
         open={!!editingAsesmen}
         onClose={() => setEditingAsesmen(null)}

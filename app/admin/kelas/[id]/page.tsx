@@ -3,18 +3,47 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import Button from "@/components/ui/Button";
-import Badge from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Input";
 import ModalKelas from "@/components/ModalKelas";
 import PengumumanCard from "@/components/PengumumanCard";
 import TugasCard from "@/components/TugasCard";
-import { showConfirm } from "@/lib/dialog";
+import MateriCard from "@/components/MateriCard";
+import ClassFeedFilter, { filterClassFeed, type ClassFeedType } from "@/components/ClassFeedFilter";
+import { showAlert, showConfirm } from "@/lib/dialog";
 
-const BRAND = "#658864";
-type AdminTab = "KELAS" | "AKUN" | "SISWA" | "GURU" | "LAPORAN";
+/*
+  Palet (3 warna): Brand #658864, Bg #FAF6EE, Putih #FFFFFF.
+  Token sama dengan landing, login, dan admin/page.tsx.
+  Dark mode: class "dark" di <html>, localStorage key "theme".
+*/
+
+const STYLES = `
+.lp{
+  color-scheme:light;
+  --bg:#FAF6EE; --surface:#FFFFFF; --tint:#F2EEE4;
+  --fg:#1B261B; --muted:#5E6E5D;
+  --border:rgba(27,38,27,.12); --border-strong:rgba(27,38,27,.28);
+  --brand:#658864; --on-brand:#FFFFFF; --link:#4F6E4E;
+  --focus:#658864; --danger:#9A3B2E;
+}
+.dark .lp{
+  color-scheme:dark;
+  --bg:#141B14; --surface:#1B241B; --tint:#202B20;
+  --fg:#FFFFFF; --muted:rgba(255,255,255,.66);
+  --border:rgba(255,255,255,.12); --border-strong:rgba(255,255,255,.28);
+  --brand:#658864; --on-brand:#FFFFFF; --link:#8FB88E;
+  --focus:#8FB88E; --danger:#E8A398;
+}
+.lp *:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+.lp a,.lp button,.lp input,.lp select,.lp textarea{transition:background-color .12s,color .12s,border-color .12s,opacity .12s}
+.lp *{scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+`;
+
+const FONT = { fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" };
+const SHELL = "lp flex min-h-screen flex-col bg-[var(--bg)] text-[var(--fg)]";
+
+type AdminTab = "DASHBOARD" | "KELAS" | "AKUN" | "SISWA" | "GURU" | "LAPORAN" | "PERFORMA";
 type GuruNav = "KELAS" | "ASESMEN" | "TUGAS" | "PROFILE";
 
 function GuruNavIcon({ nav }: { nav: GuruNav }) {
@@ -26,7 +55,7 @@ function GuruNavIcon({ nav }: { nav: GuruNav }) {
   };
 
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] flex-shrink-0">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] flex-shrink-0">
       {paths[nav]}
     </svg>
   );
@@ -34,27 +63,138 @@ function GuruNavIcon({ nav }: { nav: GuruNav }) {
 
 function TabIcon({ tab }: { tab: AdminTab }) {
   const paths: Record<AdminTab, React.ReactNode> = {
+    DASHBOARD: <path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z" />,
     KELAS: <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" />,
     AKUN: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" />,
     SISWA: <path d="M12 3 2 8l10 5 8-4v6M6 10.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-5.5" />,
     GURU: <path d="M4 19V5a2 2 0 0 1 2-2h11l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z M9 8h7 M9 12h7 M9 16h4" />,
     LAPORAN: <path d="M6 2h9l5 5v15H6V2Zm9 0v5h5M9 13h6M9 17h4" />,
+    PERFORMA: <path d="M4 19V5M4 19h17M8 16v-4M13 16V8M18 16V4" />,
   };
 
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] flex-shrink-0">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] flex-shrink-0">
       {paths[tab]}
     </svg>
   );
 }
 
 const ADMIN_TABS: { key: AdminTab; label: string }[] = [
+  { key: "DASHBOARD", label: "Dashboard" },
   { key: "KELAS", label: "Buat Kelas" },
-  { key: "AKUN", label: "Buat Akun" },
-  { key: "SISWA", label: "Daftar Siswa" },
-  { key: "GURU", label: "Daftar Guru" },
+  { key: "AKUN", label: "Daftar Akun" },
   { key: "LAPORAN", label: "Laporan" },
+  { key: "PERFORMA", label: "Performa Akademik" },
 ];
+
+/* ============ KOMPONEN PRESENTASI LOKAL ============ */
+
+function ThemeIcon({ sun }: { sun: boolean }) {
+  return sun ? (
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </svg>
+  ) : (
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
+function ThemeToggle() {
+  const [mounted, setMounted] = useState(false);
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem("theme");
+    } catch {}
+    const isDark =
+      saved === "dark" ||
+      (saved === null && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+    setDark(isDark);
+    setMounted(true);
+  }, []);
+
+  function toggle() {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try {
+      localStorage.setItem("theme", next ? "dark" : "light");
+    } catch {}
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={mounted && dark ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
+      className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] text-[var(--fg)] hover:bg-[var(--tint)]"
+    >
+      <ThemeIcon sun={mounted && dark} />
+    </button>
+  );
+}
+
+function Btn({
+  variant = "primary",
+  size = "md",
+  loading = false,
+  disabled,
+  className = "",
+  children,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "outline";
+  size?: "sm" | "md";
+  loading?: boolean;
+}) {
+  const base =
+    "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60";
+  const sizes = { sm: "h-9 px-3", md: "h-10 px-4" };
+  const variants = {
+    primary: "bg-[var(--brand)] text-[var(--on-brand)] hover:opacity-90",
+    outline: "border border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--tint)]",
+  };
+  return (
+    <button
+      type="button"
+      disabled={disabled || loading}
+      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
+      {...props}
+    >
+      {loading ? "Memproses..." : children}
+    </button>
+  );
+}
+
+function Pill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-md border border-[var(--border-strong)] px-2 py-0.5 text-xs font-medium text-[var(--muted)]">
+      {children}
+    </span>
+  );
+}
+
+function Avatar({ src, nama, size = 36 }: { src: string | null | undefined; nama: string | undefined; size?: number }) {
+  return (
+    <div
+      className="flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--tint)] text-xs font-semibold text-[var(--muted)]"
+      style={{ width: size, height: size }}
+    >
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={nama ?? ""} className="h-full w-full object-cover" />
+      ) : (
+        nama?.charAt(0) ?? "A"
+      )}
+    </div>
+  );
+}
 
 interface SiswaDiKelas {
   siswaId: string;
@@ -73,7 +213,7 @@ interface GuruDiKelas {
   mapel: { id: string; nama: string };
 }
 interface FeedItem {
-  tipe: "PENGUMUMAN" | "ASESMEN" | "TUGAS";
+  tipe: "PENGUMUMAN" | "ASESMEN" | "TUGAS" | "MATERI";
   timestamp: string;
   data: any;
 }
@@ -87,6 +227,8 @@ interface KelasDetail {
   feed: FeedItem[];
 }
 
+/* ============ HALAMAN ============ */
+
 export default function AdminKelasDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -95,9 +237,11 @@ export default function AdminKelasDetailPage() {
   const [kelas, setKelas] = useState<KelasDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [me, setMe] = useState<{ id: string; nama: string; role: string; fotoProfil: string | null } | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop collapse
 
   const [section, setSection] = useState<"SISWA" | "GURU" | null>(null);
+  const [feedFilter, setFeedFilter] = useState<ClassFeedType>("ALL");
   const [expandedRombel, setExpandedRombel] = useState<string | null>(null);
 
   const [showEditKelas, setShowEditKelas] = useState(false);
@@ -138,7 +282,8 @@ export default function AdminKelasDetailPage() {
   }
 
   function navigateToAdminTab(tab: AdminTab) {
-    router.push(`/admin?tab=${tab}`);
+    const target = tab === "AKUN" ? "/admin?tab=AKUN" : `/admin?tab=${tab}`;
+    router.push(target);
   }
 
   async function handleLogout() {
@@ -169,19 +314,21 @@ export default function AdminKelasDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAF6EE]">
-        <p className="text-sm text-[#9CA3AF]">Memuat...</p>
+      <div className={`${SHELL} items-center justify-center`} style={FONT}>
+        <style>{STYLES}</style>
+        <p className="text-sm text-[var(--muted)]">Memuat...</p>
       </div>
     );
   }
 
   if (!kelas) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#FAF6EE]">
-        <p className="text-sm text-[#9CA3AF]">Kelas tidak ditemukan.</p>
-        <Button variant="outline" onClick={() => router.push("/admin")}>
+      <div className={`${SHELL} items-center justify-center gap-3`} style={FONT}>
+        <style>{STYLES}</style>
+        <p className="text-sm text-[var(--muted)]">Kelas tidak ditemukan.</p>
+        <Btn variant="outline" onClick={() => router.push("/admin")}>
           Kembali
-        </Button>
+        </Btn>
       </div>
     );
   }
@@ -199,326 +346,401 @@ export default function AdminKelasDetailPage() {
     acc[label].push(gm);
     return acc;
   }, {});
+  const visibleFeed = filterClassFeed(kelas.feed, feedFilter);
+
+  const navItemBase = `flex h-10 cursor-pointer items-center gap-3 rounded-md px-3 text-left text-sm font-medium ${
+    sidebarCollapsed ? "lg:justify-center lg:px-0" : ""
+  }`;
+  const navActive = "bg-[var(--brand)] text-[var(--on-brand)]";
+  const navIdle = "text-[var(--muted)] hover:bg-[var(--tint)] hover:text-[var(--fg)]";
+  const labelCls = sidebarCollapsed ? "lg:hidden" : "";
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FAF6EE]" style={{ fontFamily: "Inter, sans-serif" }}>
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-[#FAF6EE]">
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6">
+    <div className={SHELL} style={FONT}>
+      <style>{STYLES}</style>
+
+      {/* HEADER */}
+      <header className="sticky top-0 z-40 h-14 border-b border-[var(--border)] bg-[var(--bg)]">
+        <div className="flex h-full items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
+            {/* mobile: buka drawer */}
             <button
+              type="button"
               onClick={() => setSidebarOpen((value) => !value)}
-              aria-label="Toggle sidebar"
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-black/5"
+              aria-label="Buka menu"
+              aria-expanded={sidebarOpen}
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md hover:bg-[var(--tint)] lg:hidden"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" className="h-5 w-5">
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Studify
-            </span>
+            {/* desktop: collapse sidebar */}
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed((value) => !value)}
+              aria-label={sidebarCollapsed ? "Perluas sidebar" : "Ciutkan sidebar"}
+              aria-expanded={!sidebarCollapsed}
+              className="hidden h-10 w-10 cursor-pointer items-center justify-center rounded-md hover:bg-[var(--tint)] lg:flex"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" className="h-5 w-5">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-base font-semibold tracking-tight">Studify</span>
           </div>
           <div className="flex items-center gap-3">
             {me && (
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold text-[#111827]">{me.nama}</p>
-                <p className="text-xs text-[#9CA3AF]">{me.role}</p>
+                <p className="text-sm font-medium leading-tight">{me.nama}</p>
+                <p className="text-xs leading-tight text-[var(--muted)]">{me.role}</p>
               </div>
             )}
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
-              {me?.fotoProfil ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" />
-              ) : (
-                me?.nama?.charAt(0) ?? "A"
-              )}
+            <div className="hidden sm:block">
+              <Avatar src={me?.fotoProfil} nama={me?.nama} />
             </div>
-            <Button size="sm" variant="outline" onClick={() => router.push(canManageClass ? "/admin" : "/guru")}>
+            <ThemeToggle />
+            <Btn size="md" variant="outline" onClick={() => router.push(canManageClass ? "/admin" : "/guru")}>
               Back
-            </Button>
+            </Btn>
           </div>
         </div>
       </header>
 
-      {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" />
-      )}
+      <div className="flex flex-1">
+        {/* BACKDROP (mobile saja) */}
+        {sidebarOpen && (
+          <div onClick={() => setSidebarOpen(false)} aria-hidden="true" className="fixed inset-0 z-40 bg-black/40 lg:hidden" />
+        )}
 
-      <aside
-        aria-label={canManageClass ? "Navigasi admin" : "Navigasi guru"}
-        className={`fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto bg-[#FAF6EE] p-4 shadow-[8px_0_24px_rgba(15,23,42,0.12)] transition-transform duration-300 ease-out ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex min-h-full flex-col border-r border-black/5 bg-[#FAF6EE] p-4 shadow-sm">
-          <p className="mb-3 px-2 pt-2 text-sm font-bold text-[#111827]">
+        {/* SIDEBAR */}
+        <aside
+          aria-label={canManageClass ? "Navigasi admin" : "Navigasi guru"}
+          className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--bg)] p-3 transition-transform duration-150 ease-out
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            lg:sticky lg:top-14 lg:z-10 lg:h-[calc(100vh-3.5rem)] lg:flex-shrink-0 lg:translate-x-0 lg:transition-[width]
+            ${sidebarCollapsed ? "lg:w-16" : "lg:w-60"}`}
+        >
+          <p className={`mb-2 px-3 pt-2 text-xs font-medium text-[var(--muted)] ${labelCls}`}>
             {canManageClass ? "Dashboard Admin" : "Dashboard Guru"}
-            <br />
-            <span style={{ color: BRAND }}>{canManageClass ? "- Detail Kelas" : "- Kelas"}</span>
           </p>
           <nav className="flex flex-col gap-1">
-            {canManageClass ? ADMIN_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => navigateToAdminTab(tab.key)}
-                title={tab.label}
-                className={`flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-left text-sm font-semibold ${
-                  tab.key === "KELAS" ? "text-[#658864]" : "text-[#374151] hover:bg-black/5"
-                }`}
-                style={tab.key === "KELAS" ? { background: `${BRAND}1A` } : undefined}
-              >
-                <TabIcon tab={tab.key} />
-                <span>{tab.label}</span>
-              </button>
-            )) : ([
-              ["KELAS", "Kelas", "/guru"],
-              ["ASESMEN", "Asesmen", "/guru/asesmen"],
-              ["TUGAS", "Tugas", "/guru/tugas"],
-              ["PROFILE", "Profile", me ? `/profil/${me.id}` : "#"],
-            ] as [GuruNav, string, string][]).map(([nav, label, href]) => (
-              <Link
-                key={nav}
-                href={href}
-                onClick={() => setSidebarOpen(false)}
-                className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
-                style={nav === "KELAS" ? { background: `${BRAND}1A`, color: BRAND } : { color: "#374151" }}
-              >
-                <GuruNavIcon nav={nav} />
-                {label}
-              </Link>
-            ))}
-          </nav>
-          <Button
-            size="md"
-            onClick={handleLogout}
-            className="mt-auto w-full rounded-xl"
-            style={{ background: "#F8CDBD", color: "#7C4A3A" }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-              <path d="M10 17l5-5-5-5M15 12H3M21 4v16" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Keluar
-          </Button>
-        </div>
-      </aside>
-
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6">
-        <div className="overflow-hidden rounded-2xl text-white shadow-sm" style={{ background: BRAND }}>
-          <div className="flex flex-wrap items-start justify-between gap-3 p-5">
-            <div>
-              <p className="text-lg font-bold">{kelas.judul}</p>
-              {kelas.deskripsi && <p className="mt-1 text-sm text-white/85">&quot;{kelas.deskripsi}&quot;</p>}
-            </div>
-            <div className="rounded-xl bg-[#FAF6EE]/15 px-3 py-2 text-right">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-white/80">Kode Kelas</p>
-              <p className="text-sm font-bold">{kelas.inviteToken}</p>
-              <button
-                onClick={handleCopyInvite}
-                className="mt-1 flex items-center gap-1 text-[11px] font-medium text-white/90 hover:underline"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3">
-                  <rect x="9" y="9" width="12" height="12" rx="2" />
-                  <path d="M5 15V5a2 2 0 0 1 2-2h10" />
-                </svg>
-                {copied ? "Tersalin!" : "Salin Link Undangan"}
-              </button>
-            </div>
-          </div>
-          <div className="border-t border-white/20 px-5 py-2.5">
-            {canManageClass && <button onClick={() => setShowEditKelas(true)} className="cursor-pointer text-xs font-semibold text-white hover:underline">
-              Edit Kelas
-            </button>}
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button variant={section === "SISWA" ? "primary" : "outline"} onClick={() => setSection(section === "SISWA" ? null : "SISWA")}>
-            Lihat Deretan Siswa
-          </Button>
-          <Button variant={section === "GURU" ? "primary" : "outline"} onClick={() => setSection(section === "GURU" ? null : "GURU")}>
-            Lihat Deretan Guru
-          </Button>
-        </div>
-
-        {section === "SISWA" && (
-          <div className="mt-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-bold text-[#111827]">Deretan Siswa</p>
-              <div className="flex items-center gap-2">
-                {canManageClass && <Button size="sm" onClick={() => setShowTambahSiswa(true)}>
-                  + Tambah Siswa
-                </Button>}
-                <button
-                  type="button"
-                  aria-label="Tutup deretan siswa"
-                  onClick={() => setSection(null)}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-black/10 text-lg text-[#6B7280] hover:bg-black/5"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-
-            {Object.keys(siswaGrouped).length === 0 ? (
-              <p className="text-sm text-[#9CA3AF]">Belum ada siswa di kelas ini.</p>
-            ) : (
-              <div className="space-y-3">
-                {Object.entries(siswaGrouped).map(([label, list]) => {
-                  const isOpen = expandedRombel === label;
+            {canManageClass
+              ? ADMIN_TABS.map((tab) => {
+                  const active = tab.key === "KELAS";
                   return (
-                    <div key={label} className="overflow-hidden rounded-2xl border border-black/5 bg-[#FAF6EE] shadow-sm">
-                      <button
-                        onClick={() => setExpandedRombel(isOpen ? null : label)}
-                        className="flex w-full cursor-pointer items-center justify-between px-5 py-3.5 text-left"
-                      >
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold text-[#111827]">{label}</p>
-                          <Badge tone="brand">{list.length} Siswa</Badge>
-                        </div>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}>
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-                      </button>
-                      {isOpen && (
-                        <div className="space-y-2 border-t border-black/5 p-4">
-                          {list.map((ks) => (
-                            <div key={ks.siswaId} className="flex items-center gap-3 rounded-xl border border-black/5 p-3">
-                              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
-                                {ks.siswa.fotoProfil ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={ks.siswa.fotoProfil} alt={ks.siswa.nama} className="h-full w-full object-cover" />
-                                ) : (
-                                  ks.siswa.nama.charAt(0)
-                                )}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold text-[#111827]">{ks.siswa.nama}</p>
-                                <p className="text-xs text-[#9CA3AF]">NIS: {ks.siswa.nis}</p>
-                              </div>
-                              {canManageClass && <button
-                                  onClick={() => handleHapusSiswa(ks.siswa.id, [kelasId])}
-                                  className="cursor-pointer text-xs font-medium text-red-500 hover:underline"
-                                >
-                                  Hapus
-                                </button>}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {section === "GURU" && (
-          <div className="mt-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-bold text-[#111827]">Deretan Guru</p>
-              <div className="flex items-center gap-2">
-                {canManageClass && <Button size="sm" onClick={() => setShowTambahGuru(true)}>
-                  + Tambah Guru
-                </Button>}
-                <button
-                  type="button"
-                  aria-label="Tutup deretan guru"
-                  onClick={() => setSection(null)}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-black/10 text-lg text-[#6B7280] hover:bg-black/5"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-
-            {Object.keys(guruGrouped).length === 0 ? (
-              <p className="text-sm text-[#9CA3AF]">Belum ada guru mengajar di kelas ini.</p>
-            ) : (
-              Object.entries(guruGrouped).map(([mapel, list]) => (
-                <div key={mapel} className="mb-4">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{mapel}</p>
-                  <div className="space-y-2">
-                    {list.map((gm) => (
-                      <div key={gm.id} className="flex items-center gap-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3 shadow-sm">
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
-                          {gm.guru.fotoProfil ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={gm.guru.fotoProfil} alt={gm.guru.nama} className="h-full w-full object-cover" />
-                          ) : (
-                            gm.guru.nama.charAt(0)
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-[#111827]">{gm.guru.nama}</p>
-                          <p className="text-xs text-[#9CA3AF]">NIK: {gm.guru.nik}</p>
-                        </div>
-                        {canManageClass && <button
-                            onClick={() => handleHapusGuru(gm.guru.id, gm.mapel.id, [kelasId])}
-                            className="cursor-pointer text-xs font-medium text-red-500 hover:underline"
-                          >
-                            Hapus
-                          </button>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {section === null && (
-          <div className="mt-6">
-            <p className="mb-3 text-sm font-bold text-[#111827]">Aktivitas Hari Ini</p>
-            <div className="space-y-3">
-              {kelas.feed.length === 0 ? (
-                <p className="text-sm text-[#9CA3AF]">Belum ada aktivitas di kelas ini.</p>
-              ) : (
-                kelas.feed.map((item, i) => {
-                  if (item.tipe === "PENGUMUMAN") {
-                    return <PengumumanCard key={`p-${i}`} data={item.data} currentUserId={me?.id ?? ""} />;
-                  }
-                  if (item.tipe === "TUGAS") {
-                    return <TugasCard key={`t-${i}`} data={item.data} currentUserId={me?.id ?? ""} role="ADMIN" />;
-                  }
-                  const a = item.data;
-                  return (
-                    <div key={`a-${i}`} className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-4 shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <Badge tone="brand">{a.tipe === "KUIS" ? "Kuis" : "Ujian Online"}</Badge>
-                        {a.mapel && <Badge tone="gray">{a.mapel.nama}</Badge>}
-                      </div>
-                      <p className="mt-2 text-sm font-bold text-[#111827]">{a.judul}</p>
-                      <p className="mt-1 text-xs text-[#9CA3AF]">
-                        {a._count?.soal ?? 0} soal · oleh {a.guru?.nama}
-                      </p>
-                    </div>
+                    <button
+                      key={tab.key}
+                      type="button"
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => navigateToAdminTab(tab.key)}
+                      title={tab.label}
+                      className={`${navItemBase} ${active ? navActive : navIdle}`}
+                    >
+                      <TabIcon tab={tab.key} />
+                      <span className={labelCls}>{tab.label}</span>
+                    </button>
                   );
                 })
-              )}
-            </div>
+              : ([
+                  ["KELAS", "Kelas", "/guru"],
+                  ["ASESMEN", "Asesmen", "/guru/asesmen"],
+                  ["TUGAS", "Tugas", "/guru/tugas"],
+                  ["PROFILE", "Profile", me ? `/profil/${me.id}` : "#"],
+                ] as [GuruNav, string, string][]).map(([nav, label, href]) => {
+                  const active = nav === "KELAS";
+                  return (
+                    <Link
+                      key={nav}
+                      href={href}
+                      title={label}
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`${navItemBase} ${active ? navActive : navIdle}`}
+                    >
+                      <GuruNavIcon nav={nav} />
+                      <span className={labelCls}>{label}</span>
+                    </Link>
+                  );
+                })}
+          </nav>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Keluar"
+            className={`mt-auto flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-[var(--border-strong)] text-sm font-medium hover:bg-[var(--tint)] ${
+              sidebarCollapsed ? "lg:border-transparent" : ""
+            }`}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <path d="M10 17l5-5-5-5M15 12H3M21 4v16" />
+            </svg>
+            <span className={labelCls}>Keluar</span>
+          </button>
+        </aside>
+
+        {/* KONTEN */}
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6">
+          <div className="mx-auto max-w-5xl">
+            <section className="border-b border-[var(--border)] pb-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-[var(--muted)]">Ringkasan kelas</p>
+                  <h1 className="mt-1 break-words text-xl font-semibold tracking-tight">{kelas.judul}</h1>
+                  {kelas.deskripsi && (
+                    <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm text-[var(--muted)]">{kelas.deskripsi}</p>
+                  )}
+                </div>
+                <div className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 sm:w-auto sm:min-w-56">
+                  <p className="text-xs font-medium text-[var(--muted)]">Kode kelas</p>
+                  <p className="mt-1 break-all text-sm font-semibold tabular-nums">{kelas.inviteToken}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-4">
+                    <button
+                      type="button"
+                      onClick={handleCopyInvite}
+                      className="inline-flex h-10 cursor-pointer items-center text-sm font-medium text-[var(--link)] underline-offset-4 hover:underline"
+                    >
+                      {copied ? "Tersalin" : "Salin link undangan"}
+                    </button>
+                    {canManageClass && (
+                      <button
+                        type="button"
+                        onClick={() => setShowEditKelas(true)}
+                        className="inline-flex h-10 cursor-pointer items-center text-sm font-medium text-[var(--link)] underline-offset-4 hover:underline"
+                      >
+                        Edit kelas
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:flex">
+                <Btn
+                  className="w-full whitespace-normal text-center sm:w-auto"
+                  variant={section === "SISWA" ? "primary" : "outline"}
+                  aria-pressed={section === "SISWA"}
+                  onClick={() => setSection(section === "SISWA" ? null : "SISWA")}
+                >
+                  Siswa ({kelas.siswa.length})
+                </Btn>
+                <Btn
+                  className="w-full whitespace-normal text-center sm:w-auto"
+                  variant={section === "GURU" ? "primary" : "outline"}
+                  aria-pressed={section === "GURU"}
+                  onClick={() => setSection(section === "GURU" ? null : "GURU")}
+                >
+                  Guru ({kelas.guruMapel.length})
+                </Btn>
+              </div>
+            </section>
+
+            {section === "SISWA" && (
+              <div className="mt-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h2 className="text-base font-semibold">Deretan Siswa</h2>
+                  <div className="flex items-center gap-2">
+                    {canManageClass && (
+                      <Btn size="sm" onClick={() => setShowTambahSiswa(true)}>
+                        + Tambah Siswa
+                      </Btn>
+                    )}
+                    <button
+                      type="button"
+                      aria-label="Tutup deretan siswa"
+                      onClick={() => setSection(null)}
+                      className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-[var(--border)] text-lg text-[var(--muted)] hover:bg-[var(--tint)]"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+
+                {Object.keys(siswaGrouped).length === 0 ? (
+                  <p className="text-sm text-[var(--muted)]">Belum ada siswa di kelas ini.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {Object.entries(siswaGrouped).map(([label, list]) => {
+                      const isOpen = expandedRombel === label;
+                      return (
+                        <div key={label} className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+                          <button
+                            type="button"
+                            aria-expanded={isOpen}
+                            onClick={() => setExpandedRombel(isOpen ? null : label)}
+                            className="flex min-h-12 w-full cursor-pointer items-center justify-between px-4 py-3 text-left hover:bg-[var(--tint)]"
+                          >
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium">{label}</p>
+                              <Pill>{list.length} Siswa</Pill>
+                            </div>
+                            <svg
+                              aria-hidden="true"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={`h-4 w-4 text-[var(--muted)] transition-transform ${isOpen ? "rotate-180" : ""}`}
+                            >
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </button>
+                          {isOpen && (
+                            <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
+                              {list.map((ks) => (
+                                <div key={ks.siswaId} className="flex items-center gap-3 px-4 py-3">
+                                  <Avatar src={ks.siswa.fotoProfil} nama={ks.siswa.nama} />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-medium">{ks.siswa.nama}</p>
+                                    <p className="text-xs tabular-nums text-[var(--muted)]">NIS: {ks.siswa.nis}</p>
+                                  </div>
+                                  {canManageClass && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleHapusSiswa(ks.siswa.id, [kelasId])}
+                                      className="h-10 cursor-pointer px-2 text-sm font-medium text-[var(--danger)] hover:underline"
+                                    >
+                                      Hapus
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {section === "GURU" && (
+              <div className="mt-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h2 className="text-base font-semibold">Deretan Guru</h2>
+                  <div className="flex items-center gap-2">
+                    {canManageClass && (
+                      <Btn size="sm" onClick={() => setShowTambahGuru(true)}>
+                        + Tambah Guru
+                      </Btn>
+                    )}
+                    <button
+                      type="button"
+                      aria-label="Tutup deretan guru"
+                      onClick={() => setSection(null)}
+                      className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-[var(--border)] text-lg text-[var(--muted)] hover:bg-[var(--tint)]"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+
+                {Object.keys(guruGrouped).length === 0 ? (
+                  <p className="text-sm text-[var(--muted)]">Belum ada guru mengajar di kelas ini.</p>
+                ) : (
+                  Object.entries(guruGrouped).map(([mapel, list]) => (
+                    <div key={mapel} className="mb-4">
+                      <p className="mb-2 text-xs font-medium text-[var(--muted)]">{mapel}</p>
+                      <div className="divide-y divide-[var(--border)] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+                        {list.map((gm) => (
+                          <div key={gm.id} className="flex items-center gap-3 px-4 py-3">
+                            <Avatar src={gm.guru.fotoProfil} nama={gm.guru.nama} />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">{gm.guru.nama}</p>
+                              <p className="text-xs tabular-nums text-[var(--muted)]">NIK: {gm.guru.nik}</p>
+                            </div>
+                            {canManageClass && (
+                              <button
+                                type="button"
+                                onClick={() => handleHapusGuru(gm.guru.id, gm.mapel.id, [kelasId])}
+                                className="h-10 cursor-pointer px-2 text-sm font-medium text-[var(--danger)] hover:underline"
+                              >
+                                Hapus
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {section === null && (
+              <div className="mt-6">
+                <h2 className="mb-3 text-base font-semibold">Aktivitas Hari Ini</h2>
+                <ClassFeedFilter value={feedFilter} onChange={setFeedFilter} />
+                <div className="mt-4 space-y-3">
+                  {kelas.feed.length === 0 ? (
+                    <p className="text-sm text-[var(--muted)]">Belum ada aktivitas di kelas ini.</p>
+                  ) : visibleFeed.length === 0 ? (
+                    <p className="rounded-md border border-dashed border-[var(--border-strong)] p-4 text-sm text-[var(--muted)]">
+                      Tidak ada aktivitas dengan filter ini.
+                    </p>
+                  ) : (
+                    visibleFeed.map((item, i) => {
+                      if (item.tipe === "PENGUMUMAN") {
+                        return <PengumumanCard key={`p-${i}`} data={item.data} currentUserId={me?.id ?? ""} />;
+                      }
+                      if (item.tipe === "MATERI") return <MateriCard key={`m-${i}`} data={item.data} />;
+                      if (item.tipe === "TUGAS") {
+                        return <TugasCard key={`t-${i}`} data={item.data} currentUserId={me?.id ?? ""} role="ADMIN" />;
+                      }
+                      const a = item.data;
+                      return (
+                        <div key={`a-${i}`} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Pill>{a.tipe === "KUIS" ? "Kuis" : "Ujian Online"}</Pill>
+                            {a.mapel && <Pill>{a.mapel.nama}</Pill>}
+                          </div>
+                          <p className="mt-2 text-sm font-medium">{a.judul}</p>
+                          <p className="mt-1 text-xs text-[var(--muted)]">
+                            {a._count?.soal ?? 0} soal · oleh {a.guru?.nama}
+                          </p>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </main>
+        </main>
+      </div>
+
+      {/* FOOTER */}
+      <footer className="mt-auto border-t border-[var(--border)]">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <span className="font-medium text-[var(--fg)]">Studify</span>
+          <span>© 2026 Studify. All Rights Reserved.</span>
+        </div>
+      </footer>
 
       {canManageClass && <ModalKelas open={showEditKelas} onClose={() => setShowEditKelas(false)} onSuccess={loadKelas} mode="edit" initialData={kelas} />}
 
-      {canManageClass && <ModalTambahSiswa
-        open={showTambahSiswa}
-        onClose={() => setShowTambahSiswa(false)}
-        onSuccess={loadKelas}
-        kelasId={kelasId}
-        siswaSudahAda={kelas.siswa.map((ks) => ks.siswaId)}
-      />}
+      {canManageClass && (
+        <ModalTambahSiswa
+          open={showTambahSiswa}
+          onClose={() => setShowTambahSiswa(false)}
+          onSuccess={loadKelas}
+          kelasId={kelasId}
+          kelasJudul={kelas.judul}
+          siswaSudahAda={kelas.siswa.map((ks) => ks.siswaId)}
+        />
+      )}
 
-      {canManageClass && <ModalTambahGuru
-        open={showTambahGuru}
-        onClose={() => setShowTambahGuru(false)}
-        onSuccess={loadKelas}
-        kelasId={kelasId}
-        guruSudahAda={kelas.guruMapel.map((gm) => gm.guru.id)}
-      />}
+      {canManageClass && (
+        <ModalTambahGuru
+          open={showTambahGuru}
+          onClose={() => setShowTambahGuru(false)}
+          onSuccess={loadKelas}
+          kelasId={kelasId}
+          guruSudahAda={kelas.guruMapel.map((gm) => gm.guru.id)}
+        />
+      )}
     </div>
   );
 }
@@ -528,26 +750,31 @@ function ModalTambahSiswa({
   onClose,
   onSuccess,
   kelasId,
+  kelasJudul,
   siswaSudahAda,
 }: {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
   kelasId: string;
+  kelasJudul: string;
   siswaSudahAda: string[];
 }) {
   const [rombelList, setRombelList] = useState<{ id: string; label: string }[]>([]);
   const [rombelId, setRombelId] = useState("");
   const [kandidat, setKandidat] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [rombelSiswaCount, setRombelSiswaCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setRombelId("");
     setKandidat([]);
     setSelectedIds([]);
+    setRombelSiswaCount(0);
     fetch("/api/kelas-referensi")
       .then((res) => res.json())
       .then((data) => setRombelList(data.data ?? []))
@@ -557,19 +784,47 @@ function ModalTambahSiswa({
   useEffect(() => {
     if (!rombelId) {
       setKandidat([]);
+      setRombelSiswaCount(0);
       return;
     }
     setLoading(true);
     fetch("/api/akun?role=SISWA")
       .then((res) => res.json())
       .then((data) => {
-        const list = (data.data ?? []).filter(
-          (s: any) => s.kelasReferensi?.id === rombelId && !siswaSudahAda.includes(s.id)
-        );
-        setKandidat(list);
+        const siswaRombel = (data.data ?? []).filter((s: any) => s.kelasReferensi?.id === rombelId);
+        setRombelSiswaCount(siswaRombel.length);
+        setKandidat(siswaRombel.filter((s: any) => !siswaSudahAda.includes(s.id)));
       })
       .finally(() => setLoading(false));
   }, [rombelId, siswaSudahAda]);
+
+  async function handleTambahSemuaRombel() {
+    const rombel = rombelList.find((item) => item.id === rombelId);
+    if (!rombel || rombelSiswaCount === 0) return;
+    if (!(await showConfirm(`Tambahkan semua ${rombelSiswaCount} siswa dari rombel ${rombel.label} ke kelas ${kelasJudul}? Siswa yang sudah menjadi anggota akan dilewati.`))) return;
+
+    setBulkSubmitting(true);
+    try {
+      const response = await fetch(`/api/kelas/${kelasId}/siswa/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rombelId }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        await showAlert(payload?.error ?? "Gagal menambahkan siswa rombel.");
+        return;
+      }
+
+      await showAlert(`Selesai: ${payload.data.ditambahkan} ditambahkan, ${payload.data.dilewati} dilewati.`);
+      onSuccess();
+      onClose();
+    } catch {
+      await showAlert("Gagal menambahkan siswa rombel. Coba lagi.");
+    } finally {
+      setBulkSubmitting(false);
+    }
+  }
 
   function toggle(id: string) {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
@@ -608,18 +863,30 @@ function ModalTambahSiswa({
           ))}
         </Select>
 
-        {loading && <p className="text-xs text-[#9CA3AF]">Memuat...</p>}
+        {rombelId && !loading && (
+          <Btn
+            variant="outline"
+            className="w-full"
+            loading={bulkSubmitting}
+            disabled={rombelSiswaCount === 0}
+            onClick={() => void handleTambahSemuaRombel()}
+          >
+            Tambah semua siswa rombel ({rombelSiswaCount})
+          </Btn>
+        )}
+
+        {loading && <p className="text-xs text-[var(--muted)]">Memuat...</p>}
 
         {!loading && rombelId && kandidat.length === 0 && (
-          <p className="text-xs text-[#9CA3AF]">Semua siswa di rombel ini sudah ada di kelas.</p>
+          <p className="text-xs text-[var(--muted)]">Semua siswa di rombel ini sudah ada di kelas.</p>
         )}
 
         {kandidat.length > 0 && (
-          <div className="max-h-64 space-y-1 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto">
             {kandidat.map((s) => (
-              <label key={s.id} className="flex cursor-pointer items-center gap-2 rounded-lg p-2 hover:bg-black/5">
-                <input type="checkbox" checked={selectedIds.includes(s.id)} onChange={() => toggle(s.id)} />
-                <span className="text-sm text-[#374151]">
+              <label key={s.id} className="flex min-h-10 cursor-pointer items-center gap-2 rounded-md px-2 hover:bg-[var(--tint)]">
+                <input type="checkbox" className="accent-[var(--brand)]" checked={selectedIds.includes(s.id)} onChange={() => toggle(s.id)} />
+                <span className="text-sm">
                   {s.nama} — {s.nis}
                 </span>
               </label>
@@ -627,9 +894,9 @@ function ModalTambahSiswa({
           </div>
         )}
 
-        <Button className="w-full" loading={submitting} disabled={selectedIds.length === 0} onClick={handleSubmit}>
+        <Btn className="w-full" loading={submitting} disabled={selectedIds.length === 0} onClick={handleSubmit}>
           Tambah {selectedIds.length > 0 ? `(${selectedIds.length})` : ""} Siswa
-        </Button>
+        </Btn>
       </div>
     </Modal>
   );
@@ -711,9 +978,9 @@ function ModalTambahGuru({
           ))}
         </Select>
 
-        <Button className="w-full" loading={submitting} disabled={!guruId || !mapelId} onClick={handleSubmit}>
+        <Btn className="w-full" loading={submitting} disabled={!guruId || !mapelId} onClick={handleSubmit}>
           Tambah Guru
-        </Button>
+        </Btn>
       </div>
     </Modal>
   );

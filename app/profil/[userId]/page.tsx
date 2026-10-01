@@ -43,28 +43,24 @@ type GuruSiswaNav = "DASHBOARD" | "KELAS" | "ASESMEN" | "TUGAS" | "PERFORMA" | "
 const ADMIN_TABS: { key: AdminTab; label: string }[] = [
   { key: "KELAS", label: "Buat Kelas" },
   { key: "AKUN", label: "Buat Akun" },
-  { key: "SISWA", label: "Daftar Siswa" },
-  { key: "GURU", label: "Daftar Guru" },
   { key: "LAPORAN", label: "Laporan" },
 ];
 const KEPSEK_TABS: { key: string; label: string; href: string }[] = [
   { key: "DASHBOARD", label: "Dashboard", href: "/kepsek" },
   { key: "KELAS", label: "Kelas", href: "/kepsek?tab=KELAS" },
-  { key: "SISWA", label: "Daftar Siswa", href: "/kepsek?tab=SISWA" },
-  { key: "GURU", label: "Daftar Guru", href: "/kepsek?tab=GURU" },
+  { key: "AKUN", label: "Daftar Akun", href: "/kepsek?tab=AKUN" },
   { key: "ASESMEN", label: "Asesmen", href: "/kepsek?tab=ASESMEN" },
   { key: "PERFORMA", label: "Performa Akademik", href: "/kepsek?tab=PERFORMA" },
 ];
 const KURIKULUM_TABS: { key: string; label: string; href: string }[] = [
   { key: "DASHBOARD", label: "Dashboard", href: "/kurikulum" },
   { key: "KELAS", label: "Kelas", href: "/kurikulum?tab=KELAS" },
-  { key: "SISWA", label: "Daftar Siswa", href: "/kurikulum?tab=SISWA" },
-  { key: "GURU", label: "Daftar Guru", href: "/kurikulum?tab=GURU" },
+  { key: "AKUN", label: "Daftar Akun", href: "/kurikulum?tab=AKUN" },
   { key: "ASESMEN", label: "Asesmen", href: "/kurikulum?tab=ASESMEN" },
   { key: "PERFORMA", label: "Performa Akademik", href: "/kurikulum?tab=PERFORMA" },
 ];
 
-type KepsekNav = "DASHBOARD" | "KELAS" | "SISWA" | "GURU" | "ASESMEN" | "PERFORMA";
+type KepsekNav = "DASHBOARD" | "KELAS" | "AKUN" | "ASESMEN" | "PERFORMA";
 
 type KurikulumNav = KepsekNav;
 
@@ -72,8 +68,7 @@ function KepsekIcon({ nav }: { nav: KepsekNav }) {
   const paths: Record<KepsekNav, React.ReactNode> = {
     DASHBOARD: <path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z" />,
     KELAS: <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" />,
-    SISWA: <path d="M12 3 2 8l10 5 8-4v6M6 10.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-5.5" />,
-    GURU: <path d="M4 19V5a2 2 0 0 1 2-2h11l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z M9 8h7 M9 12h7 M9 16h4" />,
+    AKUN: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" />,
     ASESMEN: <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm3 4h4m-4 4h4m-4 4h4" />,
     PERFORMA: <path d="M4 19V5M4 19h17M8 16v-4M13 16V8M18 16V4" />,
   };
@@ -244,17 +239,34 @@ export default function ProfilPage() {
             <span style={{ color: BRAND }}>- Profile</span>
           </p>
           <nav className="flex flex-col gap-1">
-            {me?.role === "ADMIN" &&
-              ADMIN_TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => navigateAdminTab(tab.key)}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-left text-sm font-semibold text-[#374151] hover:bg-black/5"
-                >
-                  <AdminIcon tab={tab.key} />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
+            {me?.role === "ADMIN" && (
+              <>
+                <div className="mb-3 flex items-center gap-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#64748B]">
+                    {me?.fotoProfil ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" />
+                    ) : (
+                      me?.nama?.charAt(0) ?? "A"
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[#111827]">{me?.nama}</p>
+                    <p className="text-xs text-[#9CA3AF]">Admin</p>
+                  </div>
+                </div>
+                {ADMIN_TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => navigateAdminTab(tab.key)}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-left text-sm font-semibold text-[#374151] hover:bg-black/5"
+                  >
+                    <AdminIcon tab={tab.key} />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </>
+            )}
 
             {(me?.role === "KEPSEK" ? KEPSEK_TABS : me?.role === "KURIKULUM" ? KURIKULUM_TABS : []).map((tab) => (
               <Link
@@ -268,28 +280,44 @@ export default function ProfilPage() {
               </Link>
             ))}
 
-            {(me?.role === "GURU" || me?.role === "SISWA") &&
-              (
-                [
+            {(me?.role === "GURU" || me?.role === "SISWA") && (
+              <>
+                <div className="mb-3 flex items-center gap-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#64748B]">
+                    {me?.fotoProfil ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" />
+                    ) : (
+                      me?.nama?.charAt(0) ?? "G"
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[#111827]">{me?.nama}</p>
+                    <p className="text-xs text-[#9CA3AF]">{me?.role === "GURU" ? "Guru" : "Siswa"}</p>
+                  </div>
+                </div>
+                {([
                   ["DASHBOARD", "Dashboard", me.role === "GURU" ? "/guru" : "/siswa"],
                   ["KELAS", "Kelas", me.role === "GURU" ? "/guru/kelas" : "/siswa/kelas"],
                   ["ASESMEN", "Asesmen", me.role === "GURU" ? "/guru/asesmen" : "/siswa/asesmen"],
                   ["TUGAS", "Tugas", me.role === "GURU" ? "/guru/tugas" : "/siswa/tugas"],
                   ["PERFORMA", "Performa Akademik", me.role === "GURU" ? "/guru/performa-akademik" : "/siswa/performa-akademik"],
                   ["PROFILE", "Profile", `/profil/${me.id}`],
-                ] as [GuruSiswaNav, string, string][]
-              ).map(([nav, label, href]) => (
-                <Link
-                  key={nav}
-                  href={href}
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
-                  style={nav === "PROFILE" ? { background: `${BRAND}1A`, color: BRAND } : { color: "#374151" }}
-                >
-                  <GuruSiswaIcon nav={nav} />
-                  {label}
-                </Link>
-              ))}
+                  ["DASHBOARD", "Materi", me.role === "GURU" ? "/guru/materi" : "/siswa/materi"],
+                ] as [GuruSiswaNav, string, string][]).map(([nav, label, href]) => (
+                  <Link
+                    key={`${nav}-${label}`}
+                    href={href}
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
+                    style={nav === "PROFILE" ? { background: `${BRAND}1A`, color: BRAND } : { color: "#374151" }}
+                  >
+                    <GuruSiswaIcon nav={nav} />
+                    {label}
+                  </Link>
+                ))}
+              </>
+            )}
           </nav>
           <Button
             size="md"

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import MateriCard, { MateriData } from "@/components/MateriCard";
 
 type DashboardData = {
   siswa: {
@@ -52,6 +53,7 @@ type DashboardData = {
     createdAt: string;
     mapel?: { nama: string } | null;
   }>;
+  materiHariIni: MateriData[];
   nilaiTerbaru: Array<{
     id: string;
     judul: string;
@@ -190,9 +192,20 @@ export default function SiswaDashboardPage() {
             <Link href="/siswa/tugas">
               <Button className="w-full" size="sm" variant="outline">Lihat Tugas</Button>
             </Link>
-            <Link href="/siswa/kelas">
-              <Button className="w-full" size="sm" variant="outline">Lihat Kelas</Button>
+            <Link href="/siswa/materi">
+              <Button className="w-full" size="sm" variant="outline">Lihat Materi</Button>
             </Link>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
+          <p className="text-sm font-bold text-[#111827]">Materi Hari Ini</p>
+          <div className="mt-3 space-y-3">
+            {data.materiHariIni.length === 0 ? (
+              <p className="text-sm text-[#94A3B8]">Belum ada materi baru hari ini.</p>
+            ) : (
+              <div className="space-y-2">{data.materiHariIni.map((item) => <MateriCard key={item.id} data={item} />)}</div>
+            )}
           </div>
         </div>
 
