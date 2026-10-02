@@ -8,7 +8,7 @@ export interface KelasData {
   id: string;
   judul: string;
   deskripsi: string | null;
-  inviteToken: string;
+  inviteToken?: string;
   _count?: { siswa: number };
 }
 
@@ -37,6 +37,7 @@ export default function KelasCard({
 
   function handleCopyInvite(e?: React.MouseEvent) {
     e?.stopPropagation();
+    if (!data.inviteToken) return;
     const link = `${window.location.origin}/join/${data.inviteToken}`;
     navigator.clipboard.writeText(link);
     setCopied(true);

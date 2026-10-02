@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
+import { Pill } from "@/app/guru/_ui";
 import PengumumanCard from "@/components/PengumumanCard";
 import TugasCard from "@/components/TugasCard";
 import MateriCard from "@/components/MateriCard";
@@ -119,15 +120,15 @@ export default function KurikulumKelasDetailPage() {
             {Object.keys(siswaGrouped).length === 0 ? <p className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--muted)]">Belum ada siswa di kelas ini.</p> : Object.entries(siswaGrouped).map(([label, list]) => {
               const isOpen = expandedRombel === label;
               return (
-                <div key={label} className="overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)]">
+                <div key={label} className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]">
                   <button type="button" aria-expanded={isOpen} onClick={() => setExpandedRombel(isOpen ? null : label)} className="flex min-h-12 w-full cursor-pointer items-center justify-between px-4 py-3 text-left hover:bg-[var(--tint)]">
-                    <div className="flex items-center gap-2"><p className="text-sm font-semibold text-[var(--fg)]">{label}</p><Badge tone="brand">{list.length} Siswa</Badge></div>
+                    <div className="flex items-center gap-2"><p className="text-sm font-semibold text-[var(--fg)]">{label}</p><Pill>{list.length} Siswa</Pill></div>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`h-4 w-4 text-[var(--muted)] transition-transform ${isOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
                   </button>
                   {isOpen && (
-                    <div className="space-y-2 border-t border-[var(--border)] p-3">
+                    <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
                       {list.map((ks) => (
-                        <button key={ks.siswaId} type="button" onClick={() => router.push(`/profil/${ks.siswa.id}`)} className="flex w-full cursor-pointer items-center gap-3 rounded-md border border-[var(--border)] p-3 text-left hover:bg-[var(--tint)]">
+                        <button key={ks.siswaId} type="button" onClick={() => router.push(`/profil/${ks.siswa.id}`)} className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left hover:bg-[var(--tint)]">
                           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--tint)] text-xs font-bold text-[var(--muted)]">
                             {ks.siswa.fotoProfil ? <img src={ks.siswa.fotoProfil} alt={ks.siswa.nama} className="h-full w-full object-cover" /> : ks.siswa.nama.charAt(0)}
                           </div>

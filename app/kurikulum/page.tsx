@@ -314,11 +314,11 @@ function KurikulumDashboardContent() {
               {kelasList.length === 0 ? (
                 <p className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--muted)]">Belum ada kelas dibuat.</p>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <section className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-2">
                   {kelasList.map((k) => (
-                    <KelasCard key={k.id} data={k} isEditable={false} basePath="/kurikulum/kelas" />
+                    <KelasCard key={k.id} data={k} isEditable={false} variant="list" basePath="/kurikulum/kelas" />
                   ))}
-                </div>
+                </section>
               )}
             </div>
           )}

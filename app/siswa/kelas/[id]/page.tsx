@@ -134,7 +134,7 @@ export default function SiswaKelasDetailPage() {
                   <button type="button" aria-expanded={isOpen} onClick={() => setExpandedRombel(isOpen ? null : label)} className="flex min-h-12 w-full cursor-pointer items-center justify-between px-4 py-3 text-left hover:bg-[var(--tint)]">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium">{label}</p>
-                      <Badge tone="brand">{list.length} Siswa</Badge>
+                      <Pill>{list.length} Siswa</Pill>
                     </div>
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`h-4 w-4 text-[var(--muted)] transition-transform ${isOpen ? "rotate-180" : ""}`}>
                       <path d="m6 9 6 6 6-6" />
@@ -144,9 +144,10 @@ export default function SiswaKelasDetailPage() {
                     <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
                       {list.map((ks) => (
                         <button
+                          type="button"
                           key={ks.siswaId}
                           onClick={() => router.push(`/profil/${ks.siswa.id}`)}
-                          className="flex w-full cursor-pointer items-center gap-3 p-3 text-left hover:bg-[var(--tint)]"
+                          className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left hover:bg-[var(--tint)]"
                         >
                           <Avatar src={ks.siswa.fotoProfil} nama={ks.siswa.nama} />
                           <div className="min-w-0 flex-1">
