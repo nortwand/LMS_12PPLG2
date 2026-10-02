@@ -18,6 +18,7 @@ interface KelasCardProps {
   onEdit?: (kelas: KelasData) => void;
   onDelete?: (kelasId: string) => void;
   basePath?: string;
+  variant?: "card" | "list";
 }
 
 export default function KelasCard({
@@ -26,6 +27,7 @@ export default function KelasCard({
   onEdit,
   onDelete,
   basePath = "/admin/kelas",
+  variant = "card",
 }: KelasCardProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -33,8 +35,8 @@ export default function KelasCard({
 
   const label = data.judul || "Tanpa Judul";
 
-  function handleCopyInvite(e: React.MouseEvent) {
-    e.stopPropagation();
+  function handleCopyInvite(e?: React.MouseEvent) {
+    e?.stopPropagation();
     const link = `${window.location.origin}/join/${data.inviteToken}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
@@ -44,19 +46,39 @@ export default function KelasCard({
   return (
     <div
       onClick={() => router.push(`${basePath}/${data.id}`)}
-      className="group relative cursor-pointer overflow-hidden rounded-2xl border border-black/5 bg-[#FAF6EE] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      className={variant === "list"
+        ? "group relative flex w-full cursor-pointer items-center gap-4 border-b border-[var(--border)] py-3 text-left last:border-b-0 hover:bg-[var(--tint)]"
+        : "group relative cursor-pointer overflow-hidden rounded-2xl border border-black/5 bg-[#FAF6EE] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"}
     >
-      <div className="flex items-center justify-between px-4 pt-4">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-bold text-[#111827]">{label}</p>
-          <Badge tone="brand">{data._count?.siswa ?? 0} Siswa</Badge>
+      <div className={variant === "list" ? "flex min-w-0 flex-1 items-center justify-between gap-4" : "flex items-center justify-between px-4 pt-4"}>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className={variant === "list" ? "truncate text-sm font-medium text-[var(--fg)]" : "text-sm font-bold text-[#111827]"}>{label}</p>
+            {variant === "card" && <Badge tone="brand">{data._count?.siswa ?? 0} Siswa</Badge>}
+          </div>
+          {variant === "list" && (
+            <p className="mt-1 truncate text-xs text-[var(--muted)]">
+              {data.deskripsi || "Belum ada deskripsi kelas"}
+            </p>
+          )}
         </div>
+
+        {variant === "list" && (
+          <div className="flex flex-shrink-0 items-center gap-3">
+            <span className="text-xs tabular-nums text-[var(--muted)]">{data._count?.siswa ?? 0} siswa</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-[var(--muted)]">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </div>
+        )}
 
         {isEditable && (
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <button
+                  type="button"
+                  aria-label="Menu aksi kelas"
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-[#9CA3AF] transition-colors hover:bg-black/5"
+              className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors ${variant === "list" ? "text-[var(--muted)] hover:bg-[var(--tint)]" : "text-[#9CA3AF] hover:bg-black/5"}`}
             >
               <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                 <circle cx="12" cy="5" r="1.5" />
@@ -66,22 +88,36 @@ export default function KelasCard({
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 top-8 z-20 w-32 overflow-hidden rounded-lg border border-black/5 bg-[#FAF6EE] shadow-lg">
+              <div className={`absolute right-0 top-9 z-20 w-40 overflow-hidden rounded-md border shadow-lg ${variant === "list" ? "border-[var(--border)] bg-[var(--surface)]" : "border-black/5 bg-[#FAF6EE]"}`}>
+                {variant === "list" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleCopyInvite();
+                    }}
+                    className="block h-9 w-full cursor-pointer px-3 text-left text-xs font-medium text-[var(--fg)] hover:bg-[var(--tint)]"
+                  >
+                    Salin link undangan
+                  </button>
+                )}
                 <button
+                  type="button"
                   onClick={() => {
                     setMenuOpen(false);
                     onEdit?.(data);
                   }}
-                  className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[#374151] hover:bg-black/5"
+                  className={`block h-9 w-full cursor-pointer px-3 text-left text-xs font-medium ${variant === "list" ? "text-[var(--fg)] hover:bg-[var(--tint)]" : "text-[#374151] hover:bg-black/5"}`}
                 >
                   Edit Kelas
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setMenuOpen(false);
                     onDelete?.(data.id);
                   }}
-                  className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-red-500 hover:bg-red-50"
+                  className={`block h-9 w-full cursor-pointer px-3 text-left text-xs font-medium ${variant === "list" ? "text-[var(--danger)] hover:bg-[var(--tint)]" : "text-red-500 hover:bg-red-50"}`}
                 >
                   Hapus Kelas
                 </button>
@@ -92,13 +128,15 @@ export default function KelasCard({
       </div>
 
       {/* deskripsi -- strip walas dihapus total */}
-      <div className="px-4 py-3">
-        <p className="line-clamp-2 text-xs italic text-[#6B7280]">
-          {data.deskripsi ? `"${data.deskripsi}"` : "Belum ada deskripsi."}
-        </p>
-      </div>
+      {variant === "card" && (
+        <div className="px-4 py-3">
+          <p className="line-clamp-2 text-xs italic text-[#6B7280]">
+            {data.deskripsi ? `"${data.deskripsi}"` : "Belum ada deskripsi."}
+          </p>
+        </div>
+      )}
 
-      {isEditable && (
+      {isEditable && variant === "card" && (
         <div className="flex items-center gap-1 border-t border-black/5 px-4 py-2.5">
           <button
             onClick={handleCopyInvite}

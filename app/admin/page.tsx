@@ -897,18 +897,19 @@ export default function AdminDashboard() {
                 {kelasList.length === 0 ? (
                   <p className="text-sm text-[var(--muted)]">Belum ada kelas dibuat.</p>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <section className={`${PANEL} py-2`}>
                     {kelasList.map((k) => (
                       <KelasCard
                         key={k.id}
                         data={k}
                         isEditable
+                        variant="list"
                         basePath="/admin/kelas"
                         onEdit={openEditKelas}
                         onDelete={() => setDeletingKelas(k)}
                       />
                     ))}
-                  </div>
+                  </section>
                 )}
               </div>
             )}
