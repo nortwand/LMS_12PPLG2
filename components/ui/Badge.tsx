@@ -11,17 +11,17 @@ interface BadgeProps {
 }
 
 const toneClasses: Record<Tone, string> = {
-  brand: "bg-[#658864]/10 text-[#658864]",
-  gray: "bg-gray-100 text-gray-600",
-  green: "bg-green-100 text-green-700",
-  red: "bg-red-100 text-red-600",
-  amber: "bg-amber-100 text-amber-700",
+  brand: "bg-[var(--tint)] text-[var(--link)]",
+  gray: "bg-[var(--tint)] text-[var(--muted)]",
+  green: "bg-[var(--tint)] text-[var(--link)]",
+  red: "bg-[var(--tint)] text-[var(--danger)]",
+  amber: "border border-[var(--border-strong)] bg-[var(--tint)] text-[var(--fg)]",
 };
 
 export default function Badge({ children, tone = "brand", className = "" }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${toneClasses[tone]} ${className}`}
+      className={`inline-flex items-center rounded-md px-2.5 py-1 text-[11px] font-semibold ${toneClasses[tone]} ${className}`}
     >
       {children}
     </span>

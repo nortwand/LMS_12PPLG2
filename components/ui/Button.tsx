@@ -2,8 +2,6 @@
 
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
-const BRAND = "#658864";
-
 type Variant = "primary" | "outline" | "danger" | "ghost";
 type Size = "sm" | "md" | "lg";
 
@@ -31,22 +29,22 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-60";
+    "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
 
   const variantStyle: Record<Variant, { className: string; style?: React.CSSProperties }> = {
     primary: {
-      className: "text-white hover:scale-[1.02] active:scale-[0.98]",
-      style: { background: BRAND },
+      className: "text-[var(--on-brand)] hover:opacity-90",
+      style: { background: "var(--brand, #658864)", color: "var(--on-brand, #fff)" },
     },
     outline: {
-      className: "border text-[#374151] hover:bg-black/5",
-      style: { borderColor: "#D1D5DB" },
+      className: "border border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--tint)]",
     },
     danger: {
-      className: "bg-red-500 text-white hover:bg-red-600",
+      className: "text-[var(--bg)] hover:opacity-90",
+      style: { background: "var(--danger, #9A3B2E)", color: "var(--bg, #FAF6EE)" },
     },
     ghost: {
-      className: "text-[#6B7280] hover:bg-black/5",
+      className: "text-[var(--muted)] hover:bg-[var(--tint)]",
     },
   };
 

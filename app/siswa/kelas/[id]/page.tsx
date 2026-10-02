@@ -3,14 +3,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import PengumumanCard from "@/components/PengumumanCard";
 import TugasCard from "@/components/TugasCard";
 import MateriCard from "@/components/MateriCard";
 import ClassFeedFilter, { filterClassFeed, type ClassFeedType } from "@/components/ClassFeedFilter";
-
-const BRAND = "#658864";
+import { Avatar, Btn, PANEL, Pill } from "@/app/guru/_ui";
 
 interface SiswaDiKelas {
   siswaId: string;
@@ -80,15 +78,15 @@ export default function SiswaKelasDetailPage() {
     }
   }
 
-  if (loading) return <p className="text-sm text-[#9CA3AF]">Memuat...</p>;
+  if (loading) return <p className="text-sm text-[var(--muted)]">Memuat...</p>;
 
   if (error || !kelas) {
     return (
       <div className="flex flex-col items-center gap-3 py-10">
-        <p className="text-sm text-[#9CA3AF]">{error || "Kelas tidak ditemukan."}</p>
-        <Button variant="outline" onClick={() => router.push("/siswa")}>
+        <p className="text-sm text-[var(--muted)]">{error || "Kelas tidak ditemukan."}</p>
+        <Btn variant="outline" onClick={() => router.push("/siswa/kelas")}>
           Kembali
-        </Button>
+        </Btn>
       </div>
     );
   }
@@ -109,58 +107,51 @@ export default function SiswaKelasDetailPage() {
   const visibleFeed = filterClassFeed(kelas.feed, feedFilter);
 
   return (
-    <div>
-      <section className="border-b border-[#D8DEE6] pb-5">
-        <p className="text-xs font-semibold uppercase text-[#64748B]">Ringkasan kelas</p>
-        <h1 className="mt-1 break-words text-2xl font-bold text-[#17231A]">{kelas.judul}</h1>
-        {kelas.deskripsi && <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm text-[#475569]">{kelas.deskripsi}</p>}
+    <div className="space-y-6">
+      <section className="border-b border-[var(--border)] pb-5">
+        <p className="text-xs font-medium text-[var(--muted)]">Ringkasan kelas</p>
+        <h1 className="mt-1 break-words text-xl font-semibold tracking-tight">{kelas.judul}</h1>
+        {kelas.deskripsi && <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm text-[var(--muted)]">{kelas.deskripsi}</p>}
         <div className="mt-4 grid grid-cols-2 gap-2 sm:flex">
-          <Button className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "SISWA" ? "primary" : "outline"} onClick={() => setSection(section === "SISWA" ? null : "SISWA")}>
+          <Btn className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "SISWA" ? "primary" : "outline"} aria-pressed={section === "SISWA"} onClick={() => setSection(section === "SISWA" ? null : "SISWA")}>
             Siswa ({kelas.siswa.length})
-          </Button>
-          <Button className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "GURU" ? "primary" : "outline"} onClick={() => setSection(section === "GURU" ? null : "GURU")}>
+          </Btn>
+          <Btn className="w-full justify-center whitespace-normal text-center sm:w-auto" size="sm" variant={section === "GURU" ? "primary" : "outline"} aria-pressed={section === "GURU"} onClick={() => setSection(section === "GURU" ? null : "GURU")}>
             Guru ({kelas.guruMapel.length})
-          </Button>
+          </Btn>
         </div>
       </section>
 
       {section === "SISWA" && (
         <div className="mt-4 space-y-3">
           {Object.keys(siswaGrouped).length === 0 ? (
-            <p className="text-sm text-[#9CA3AF]">Belum ada siswa di kelas ini.</p>
+            <p className="text-sm text-[var(--muted)]">Belum ada siswa di kelas ini.</p>
           ) : (
             Object.entries(siswaGrouped).map(([label, list]) => {
               const isOpen = expandedRombel === label;
               return (
-                <div key={label} className="overflow-hidden border border-[#D8DEE6] bg-white">
-                  <button onClick={() => setExpandedRombel(isOpen ? null : label)} className="flex w-full cursor-pointer items-center justify-between px-5 py-3.5 text-left">
+                <div key={label} className={`${PANEL} overflow-hidden p-0`}>
+                  <button type="button" aria-expanded={isOpen} onClick={() => setExpandedRombel(isOpen ? null : label)} className="flex min-h-12 w-full cursor-pointer items-center justify-between px-4 py-3 text-left hover:bg-[var(--tint)]">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold text-[#111827]">{label}</p>
+                      <p className="text-sm font-medium">{label}</p>
                       <Badge tone="brand">{list.length} Siswa</Badge>
                     </div>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`h-4 w-4 text-[var(--muted)] transition-transform ${isOpen ? "rotate-180" : ""}`}>
                       <path d="m6 9 6 6 6-6" />
                     </svg>
                   </button>
                   {isOpen && (
-                    <div className="space-y-2 border-t border-black/5 p-4">
+                    <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
                       {list.map((ks) => (
                         <button
                           key={ks.siswaId}
                           onClick={() => router.push(`/profil/${ks.siswa.id}`)}
-                          className="flex w-full cursor-pointer items-center gap-3 border-b border-[#E2E8F0] p-3 text-left last:border-0 hover:bg-[#F8FAFC]"
+                          className="flex w-full cursor-pointer items-center gap-3 p-3 text-left hover:bg-[var(--tint)]"
                         >
-                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
-                            {ks.siswa.fotoProfil ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={ks.siswa.fotoProfil} alt={ks.siswa.nama} className="h-full w-full object-cover" />
-                            ) : (
-                              ks.siswa.nama.charAt(0)
-                            )}
-                          </div>
+                          <Avatar src={ks.siswa.fotoProfil} nama={ks.siswa.nama} />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold text-[#111827]">{ks.siswa.nama}</p>
-                            <p className="text-xs text-[#9CA3AF]">NIS: {ks.siswa.nis}</p>
+                            <p className="truncate text-sm font-medium">{ks.siswa.nama}</p>
+                            <p className="text-xs text-[var(--muted)]">NIS: {ks.siswa.nis}</p>
                           </div>
                         </button>
                       ))}
@@ -176,27 +167,20 @@ export default function SiswaKelasDetailPage() {
       {section === "GURU" && (
         <div className="mt-4">
           {Object.keys(guruGrouped).length === 0 ? (
-            <p className="text-sm text-[#9CA3AF]">Belum ada guru mengajar di kelas ini.</p>
+            <p className="text-sm text-[var(--muted)]">Belum ada guru mengajar di kelas ini.</p>
           ) : (
             Object.entries(guruGrouped).map(([mapel, list]) => (
               <div key={mapel} className="mb-4">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#9CA3AF]">{mapel}</p>
-                <div className="space-y-2">
+                <p className="mb-2 text-xs font-medium text-[var(--muted)]">{mapel}</p>
+                <div className={`${PANEL} divide-y divide-[var(--border)] overflow-hidden p-0`}>
                   {list.map((gm) => (
                     <button
                       key={gm.id}
                       onClick={() => router.push(`/profil/${gm.guru.id}`)}
-                      className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3 text-left shadow-sm hover:bg-black/5"
+                      className="flex w-full cursor-pointer items-center gap-3 p-3 text-left hover:bg-[var(--tint)]"
                     >
-                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
-                        {gm.guru.fotoProfil ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={gm.guru.fotoProfil} alt={gm.guru.nama} className="h-full w-full object-cover" />
-                        ) : (
-                          gm.guru.nama.charAt(0)
-                        )}
-                      </div>
-                      <p className="text-sm font-semibold text-[#111827]">{gm.guru.nama}</p>
+                      <Avatar src={gm.guru.fotoProfil} nama={gm.guru.nama} />
+                      <p className="text-sm font-medium">{gm.guru.nama}</p>
                     </button>
                   ))}
                 </div>
@@ -208,13 +192,13 @@ export default function SiswaKelasDetailPage() {
 
       {section === null && (
         <div className="mt-6">
-          <p className="mb-3 text-sm font-bold text-[#111827]">Aktivitas Kelas</p>
-          <ClassFeedFilter value={feedFilter} onChange={setFeedFilter} />
+          <h2 className="mb-3 text-base font-semibold">Aktivitas Kelas</h2>
+          <ClassFeedFilter value={feedFilter} onChange={setFeedFilter} themed />
           <div className="mt-4 space-y-3">
             {kelas.feed.length === 0 ? (
-              <p className="text-sm text-[#9CA3AF]">Belum ada aktivitas di kelas ini.</p>
+              <p className="rounded-md border border-dashed border-[var(--border-strong)] p-4 text-sm text-[var(--muted)]">Belum ada aktivitas di kelas ini.</p>
             ) : visibleFeed.length === 0 ? (
-              <p className="border border-dashed border-[#CBD5E1] p-4 text-sm text-[#64748B]">Tidak ada aktivitas dengan filter ini.</p>
+              <p className="rounded-md border border-dashed border-[var(--border-strong)] p-4 text-sm text-[var(--muted)]">Tidak ada aktivitas dengan filter ini.</p>
             ) : (
               visibleFeed.map((item, i) => {
                 if (item.tipe === "PENGUMUMAN") {
@@ -230,7 +214,7 @@ export default function SiswaKelasDetailPage() {
                 // ASESMEN: murni tampilan, gak diklik dari feed -- siswa ngerjain dari tab Asesmen
                 const a = item.data;
                 return (
-                  <div key={`a-${i}`} className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-4 shadow-sm">
+                  <div key={`a-${i}`} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <Badge tone="brand">{a.tipe === "KUIS" ? "Kuis" : "Ujian Online"}</Badge>
@@ -239,13 +223,13 @@ export default function SiswaKelasDetailPage() {
                       <button
                         type="button"
                         onClick={() => router.push(`/siswa/asesmen/${a.id}`)}
-                        className="flex-shrink-0 rounded-lg bg-[#658864] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#557654]"
+                        className="flex-shrink-0 rounded-md bg-[var(--brand)] px-3 py-2 text-xs font-medium text-[var(--on-brand)] hover:opacity-90"
                       >
                         {a.statusSubmission === "SUDAH" ? "Sudah Dikerjakan" : "Kerjakan"}
                       </button>
                     </div>
-                    <p className="mt-2 text-sm font-bold text-[#111827]">{a.judul}</p>
-                    <p className="mt-1 text-xs text-[#9CA3AF]">oleh {a.guru?.nama}</p>
+                    <p className="mt-2 text-sm font-semibold">{a.judul}</p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">oleh {a.guru?.nama}</p>
                   </div>
                 );
               })

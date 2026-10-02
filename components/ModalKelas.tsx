@@ -79,7 +79,7 @@ export default function ModalKelas({ open, onClose, onSuccess, mode, initialData
         <Input label="Judul Kelas" value={judul} onChange={(e) => setJudul(e.target.value)} required />
         <Textarea label="Deskripsi (opsional)" value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} />
 
-        {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+        {error && <p className="text-xs font-medium text-[var(--danger)]">{error}</p>}
 
         <Button type="submit" loading={loading} className="w-full">
           {mode === "create" ? "Buat Kelas" : "Simpan Perubahan"}

@@ -106,7 +106,7 @@ export default function ModalEditAsesmen({ open, onClose, onSuccess, initialData
         <Input label="Durasi (menit)" type="number" min={10} value={durasiMenit} onChange={(e) => setDurasiMenit(e.target.value)} />
         <Textarea label="Deskripsi" value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} />
 
-        {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+        {error && <p className="text-xs font-medium text-[var(--danger)]">{error}</p>}
 
         <Button type="submit" loading={loading} className="w-full">Simpan Perubahan</Button>
       </form>

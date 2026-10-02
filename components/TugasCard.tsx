@@ -198,10 +198,10 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
   }
 
   return (
-    <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-4 shadow-sm">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--tint)] text-xs font-bold text-[var(--muted)]">
             {data.guru.fotoProfil ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={data.guru.fotoProfil} alt={data.guru.nama} className="h-full w-full object-cover" />
@@ -210,11 +210,11 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
             )}
           </div>
           <div>
-            <p className="text-sm font-bold text-[#111827]">{data.guru.nama}</p>
+            <p className="text-sm font-bold text-[var(--fg)]">{data.guru.nama}</p>
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge tone="brand">Tugas</Badge>
               {data.mapel && <Badge tone="gray">{data.mapel.nama}</Badge>}
-              <span className="text-[11px] text-[#9CA3AF]">
+              <span className="text-[11px] text-[var(--muted)]">
                 {new Date(data.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
               </span>
             </div>
@@ -223,12 +223,12 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
 
         {isOwner && (
           <div className="relative flex-shrink-0" data-options-menu>
-            <button type="button" aria-label="Opsi tugas" onClick={() => setOpenOptionsId((value) => value === "tugas" ? null : "tugas")} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-lg font-bold text-[#64748B] hover:bg-[#F1F5F9]">⋯</button>
+            <button type="button" aria-label="Opsi tugas" onClick={() => setOpenOptionsId((value) => value === "tugas" ? null : "tugas")} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-lg font-bold text-[var(--muted)] hover:bg-[var(--tint)]">⋯</button>
             {openOptionsId === "tugas" && (
-              <div className="absolute right-0 top-9 z-20 w-32 overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#FAF6EE] py-1 shadow-lg">
-                <button type="button" onClick={() => { setOpenOptionsId(null); onSend?.(data); }} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[#475569] hover:bg-[#F8FAFC]">Kirim ke</button>
-                <button type="button" onClick={() => { setOpenOptionsId(null); onEdit?.(data); }} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[#475569] hover:bg-[#F8FAFC]">Edit</button>
-                <button type="button" onClick={() => { setOpenOptionsId(null); onDelete?.(data.id); }} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-red-500 hover:bg-red-50">Hapus</button>
+              <div className="absolute right-0 top-9 z-20 w-32 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] py-1 shadow-lg">
+                <button type="button" onClick={() => { setOpenOptionsId(null); onSend?.(data); }} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[var(--muted)] hover:bg-[var(--tint)]">Kirim ke</button>
+                <button type="button" onClick={() => { setOpenOptionsId(null); onEdit?.(data); }} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[var(--muted)] hover:bg-[var(--tint)]">Edit</button>
+                <button type="button" onClick={() => { setOpenOptionsId(null); onDelete?.(data.id); }} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[var(--danger)] hover:bg-[var(--tint)]">Hapus</button>
               </div>
             )}
           </div>
@@ -240,8 +240,8 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
         )}
       </div>
 
-      <p className="mt-3 text-sm font-bold text-[#111827]">{data.judul}</p>
-      {data.isi && <p className="mt-1 whitespace-pre-wrap text-sm text-[#374151]">{data.isi}</p>}
+      <p className="mt-3 text-sm font-bold text-[var(--fg)]">{data.judul}</p>
+      {data.isi && <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--fg)]">{data.isi}</p>}
 
       {data.lampiran.length > 0 && (
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -253,9 +253,9 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
               rel={isImageUrl(l.url) ? undefined : "noopener noreferrer"}
               download={l.tipe === "FILE" ? l.judul || undefined : undefined}
               onClick={isImageUrl(l.url) ? (e) => { e.preventDefault(); setPreviewImage({ url: l.url, title: l.judul || "Preview gambar" }); } : undefined}
-              className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#E2E8F0] bg-[#FAF6EE] p-3 transition-colors hover:border-[#C7D2FE] hover:bg-[#F8FAFF]"
+              className="group flex min-w-0 items-center gap-3 rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 transition-colors hover:border-[var(--brand)] hover:bg-[var(--tint)]"
             >
-              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-[#658864]">
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[var(--tint)] text-[var(--link)]">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                   {l.tipe === "LINK" ? (
                     <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
@@ -265,14 +265,14 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                 </svg>
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-xs font-semibold text-[#1E293B]">
+                <span className="block truncate text-xs font-semibold text-[var(--fg)]">
                   {l.judul || (l.tipe === "LINK" ? "Link materi tugas" : "File materi tugas")}
                 </span>
-                <span className="mt-0.5 block truncate text-[11px] text-[#94A3B8]">
+                <span className="mt-0.5 block truncate text-[11px] text-[var(--muted)]">
                   {l.tipe === "LINK" ? l.url : "Lampiran file"}
                 </span>
               </span>
-              <span className="flex-shrink-0 text-[11px] font-semibold text-[#658864] group-hover:underline">
+              <span className="flex-shrink-0 text-[11px] font-semibold text-[var(--link)] group-hover:underline">
                 {isImageUrl(l.url) ? "Lihat" : l.tipe === "FILE" ? "Unduh" : "Buka"}
               </span>
             </a>
@@ -280,20 +280,20 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
         </div>
       )}
 
-      <button onClick={handleToggleExpand} className="mt-3 cursor-pointer text-xs font-medium text-[#6B7280] hover:text-[#658864]">
+      <button onClick={handleToggleExpand} className="mt-3 cursor-pointer text-xs font-medium text-[var(--muted)] hover:text-[var(--link)]">
         {data._count?.submission ?? submissions?.length ?? 0} kumpulan jawaban {expanded ? "▲" : "▼"}
       </button>
 
       {expanded && (
-        <div className="mt-3 space-y-3 border-t border-black/5 pt-3">
-          {loadingDetail && <p className="text-xs text-[#9CA3AF]">Memuat...</p>}
+        <div className="mt-3 space-y-3 border-t border-[var(--border)] pt-3">
+          {loadingDetail && <p className="text-xs text-[var(--muted)]">Memuat...</p>}
 
           {/* upload jawaban -- cuma siswa, cuma lampiran (file/link), gak ada input teks */}
           {role === "SISWA" && (
-            <div className="rounded-lg border border-dashed border-[#D1D5DB] p-3">
-              <p className="mb-2 text-xs font-semibold text-[#374151]">{editingSubmission ? "Edit Jawaban Tugas" : "Jawab Tugas (lampirkan file/pdf/link)"}</p>
+            <div className="rounded-lg border border-dashed border-[var(--border-strong)] p-3">
+              <p className="mb-2 text-xs font-semibold text-[var(--fg)]">{editingSubmission ? "Edit Jawaban Tugas" : "Jawab Tugas (lampirkan file/pdf/link)"}</p>
               <div className="flex flex-wrap items-center gap-2">
-                <label className="cursor-pointer rounded-lg border border-[#D1D5DB] px-3 py-1.5 text-xs font-medium text-[#374151] hover:bg-black/5">
+                <label className="cursor-pointer rounded-lg border border-[var(--border-strong)] px-3 py-1.5 text-xs font-medium text-[var(--fg)] hover:bg-[var(--tint)]">
                   {uploading ? "Upload..." : "+ Upload File"}
                   <input
                     type="file"
@@ -306,7 +306,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                   value={linkInput}
                   onChange={(e) => setLinkInput(e.target.value)}
                   placeholder="atau tempel link..."
-                  className="min-w-[140px] flex-1 rounded-lg border border-[#D1D5DB] px-3 py-1.5 text-xs outline-none focus:border-[#658864]"
+                  className="min-w-[140px] flex-1 rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--fg)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--brand)]"
                 />
                 <Button
                   type="button"
@@ -324,7 +324,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                   {pendingLampiran.map((f, i) => (
                     <Badge key={i} tone="brand" className="flex items-center gap-1">
                       {f.judul || f.url}
-                      <button type="button" onClick={() => handleRemovePending(i)} className="cursor-pointer hover:text-red-500">
+                      <button type="button" onClick={() => handleRemovePending(i)} className="cursor-pointer hover:text-[var(--danger)]">
                         ×
                       </button>
                     </Badge>
@@ -346,7 +346,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                 <button
                   type="button"
                   onClick={() => { setPendingLampiran([]); setEditingSubmission(false); }}
-                  className="ml-2 cursor-pointer text-xs font-medium text-[#6B7280] hover:underline"
+                  className="ml-2 cursor-pointer text-xs font-medium text-[var(--muted)] hover:underline"
                 >
                   Batal
                 </button>
@@ -359,7 +359,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
             <div key={s.id} className="flex items-start gap-2">
               <button
                 onClick={() => router.push(`/profil/${s.siswa.id}`)}
-                className="flex h-7 w-7 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-[10px] font-bold text-[#6B7280]"
+                className="flex h-7 w-7 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[var(--tint)] text-[10px] font-bold text-[var(--muted)]"
               >
                 {s.siswa.fotoProfil ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -368,26 +368,26 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                   s.siswa.nama.charAt(0)
                 )}
               </button>
-              <div className="relative flex-1 rounded-lg bg-[#FAF6EE] p-2.5" data-options-menu>
+              <div className="relative flex-1 rounded-lg bg-[var(--surface)] p-2.5" data-options-menu>
                 {(role === "GURU" || (role === "SISWA" && s.siswa.id === currentUserId)) && (
                   <div className="absolute right-2 top-2" data-options-menu>
                     <button
                       type="button"
                       aria-label="Opsi jawaban"
                       onClick={() => setOpenOptionsId((value) => value === `jawaban-${s.id}` ? null : `jawaban-${s.id}`)}
-                      className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-base font-bold text-[#64748B] hover:bg-[#FAF6EE]"
+                      className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-base font-bold text-[var(--muted)] hover:bg-[var(--surface)]"
                     >
                       ⋯
                     </button>
                     {openOptionsId === `jawaban-${s.id}` && (
-                      <div className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#FAF6EE] py-1 shadow-lg">
+                      <div className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] py-1 shadow-lg">
                         {role === "SISWA" ? (
                           <>
-                            <button type="button" onClick={() => { setOpenOptionsId(null); handleEditSubmission(); }} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[#475569] hover:bg-[#F8FAFC]">Edit Jawaban</button>
-                            <button type="button" onClick={() => { setOpenOptionsId(null); void handleDeleteSubmission(); }} disabled={submitting} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50">Hapus Jawaban</button>
+                            <button type="button" onClick={() => { setOpenOptionsId(null); handleEditSubmission(); }} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[var(--muted)] hover:bg-[var(--tint)]">Edit Jawaban</button>
+                            <button type="button" onClick={() => { setOpenOptionsId(null); void handleDeleteSubmission(); }} disabled={submitting} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[var(--danger)] hover:bg-[var(--tint)] disabled:opacity-50">Hapus Jawaban</button>
                           </>
                         ) : (
-                          <button type="button" onClick={() => { setOpenOptionsId(null); void handleDeleteStudentSubmission(s.id, s.siswa.nama); }} disabled={deletingSubmissionId === s.id} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50">Hapus Jawaban Siswa</button>
+                          <button type="button" onClick={() => { setOpenOptionsId(null); void handleDeleteStudentSubmission(s.id, s.siswa.nama); }} disabled={deletingSubmissionId === s.id} className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[var(--danger)] hover:bg-[var(--tint)] disabled:opacity-50">Hapus Jawaban Siswa</button>
                         )}
                       </div>
                     )}
@@ -395,15 +395,15 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                 )}
                 <button
                   onClick={() => router.push(`/profil/${s.siswa.id}`)}
-                  className="cursor-pointer text-xs font-bold text-[#111827] hover:underline"
+                  className="cursor-pointer text-xs font-bold text-[var(--fg)] hover:underline"
                 >
                   {s.siswa.id === currentUserId ? "Anda" : s.siswa.nama}
                 </button>
-                <span className="ml-2 text-[11px] font-medium text-[#64748B]">
+                <span className="ml-2 text-[11px] font-medium text-[var(--muted)]">
                   {s.siswa.kelasReferensi?.label ?? "Kelas belum diatur"}
                 </span>
                 {s.submittedAt && (
-                  <p className="mt-0.5 text-[11px] text-[#9CA3AF]">
+                  <p className="mt-0.5 text-[11px] text-[var(--muted)]">
                     Dikumpulkan {new Date(s.submittedAt).toLocaleString("id-ID", {
                       day: "numeric",
                       month: "long",
@@ -422,9 +422,9 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                       rel={isImageUrl(l.url) ? undefined : "noopener noreferrer"}
                       download={l.tipe === "FILE" ? l.judul || undefined : undefined}
                       onClick={isImageUrl(l.url) ? (e) => { e.preventDefault(); setPreviewImage({ url: l.url, title: l.judul || "Preview gambar" }); } : undefined}
-                      className="group flex min-w-0 items-center gap-3 rounded-xl border border-[#E2E8F0] bg-[#FAF6EE] p-3 transition-colors hover:border-[#C7D2FE] hover:bg-[#F8FAFF]"
+                      className="group flex min-w-0 items-center gap-3 rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 transition-colors hover:border-[var(--brand)] hover:bg-[var(--tint)]"
                     >
-                      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-[#658864]">
+                      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[var(--tint)] text-[var(--link)]">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                           {l.tipe === "LINK" ? (
                             <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
@@ -434,14 +434,14 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                         </svg>
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-semibold text-[#1E293B]">
+                        <span className="block truncate text-xs font-semibold text-[var(--fg)]">
                           {l.judul || (l.tipe === "LINK" ? "Link jawaban siswa" : "File jawaban siswa")}
                         </span>
-                        <span className="mt-0.5 block truncate text-[11px] text-[#94A3B8]">
+                        <span className="mt-0.5 block truncate text-[11px] text-[var(--muted)]">
                           {l.tipe === "LINK" ? l.url : "Lampiran file"}
                         </span>
                       </span>
-                      <span className="flex-shrink-0 text-[11px] font-semibold text-[#658864] group-hover:underline">
+                      <span className="flex-shrink-0 text-[11px] font-semibold text-[var(--link)] group-hover:underline">
                         {isImageUrl(l.url) ? "Lihat" : l.tipe === "FILE" ? "Unduh" : "Buka"}
                       </span>
                     </a>
@@ -452,7 +452,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
           ))}
 
           {!loadingDetail && submissions?.length === 0 && (
-            <p className="text-xs text-[#9CA3AF]">Belum ada yang mengumpulkan.</p>
+            <p className="text-xs text-[var(--muted)]">Belum ada yang mengumpulkan.</p>
           )}
         </div>
       )}

@@ -3,10 +3,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Button from "@/components/ui/Button";
 import { showConfirm } from "@/lib/dialog";
 import Badge from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
+import { Btn as Button, INPUT, PANEL } from "@/app/guru/_ui";
 
 interface OpsiSoal {
   id: string;
@@ -253,11 +253,11 @@ export default function SiswaAsesmenKerjakanPage() {
     return [j, m, d].map((n) => String(n).padStart(2, "0")).join(":");
   }
 
-  if (loading) return <p className="text-sm text-[#9CA3AF]">Memuat...</p>;
+  if (loading) return <p className="text-sm text-[var(--muted)]">Memuat asesmen...</p>;
   if (error || !asesmen) {
     return (
       <div className="flex flex-col items-center gap-3 py-10">
-        <p className="text-sm text-[#9CA3AF]">{error || "Asesmen tidak ditemukan."}</p>
+        <p className="text-sm text-[var(--muted)]">{error || "Asesmen tidak ditemukan."}</p>
         <Button variant="outline" onClick={() => router.push("/siswa/asesmen")}>
           Kembali
         </Button>
@@ -267,30 +267,30 @@ export default function SiswaAsesmenKerjakanPage() {
 
   if (sudahSelesai) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-black/5 bg-[#FAF6EE] p-10 text-center shadow-sm">
+      <div className={`${PANEL} flex flex-col items-center gap-3 p-10 text-center`}>
         <Badge tone="green">Sudah Dikumpulkan</Badge>
-        <p className="text-lg font-bold text-[#111827]">{asesmen.judul}</p>
-        <p className="text-sm text-[#6B7280]">Jawabanmu sudah tersimpan. Nilai akan diumumkan oleh guru.</p>
+        <p className="text-lg font-semibold">{asesmen.judul}</p>
+        <p className="text-sm text-[var(--muted)]">Jawabanmu sudah tersimpan. Nilai akan diumumkan oleh guru.</p>
         <Button onClick={() => router.push("/siswa/asesmen")}>Kembali ke Asesmen</Button>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
+    <div className="space-y-4">
+      <div className={`${PANEL} flex flex-wrap items-center justify-between gap-3`}>
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-lg font-bold text-[#111827]">{asesmen.judul}</p>
+            <p className="text-lg font-semibold">{asesmen.judul}</p>
             <Badge tone="amber">Sedang Mengerjakan {isKuis ? "Kuis" : "Ujian Online"}</Badge>
           </div>
-          <p className="mt-0.5 text-sm text-[#6B7280]">Mapel - {asesmen.mapel?.nama ?? "-"}</p>
+          <p className="mt-0.5 text-sm text-[var(--muted)]">Mapel - {asesmen.mapel?.nama ?? "-"}</p>
         </div>
         {asesmen.durasiMenit && (
-          <div className={`rounded-xl border px-4 py-2 text-right ${sisaDetik <= 300 ? "border-red-300 bg-red-50" : "border-black/5 bg-[#FAF6EE]"}`}>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Sisa Waktu</p>
-            <p className={`text-lg font-bold ${sisaDetik <= 300 ? "text-red-600" : "text-[#111827]"}`}>{formatTimer(sisaDetik)}</p>
-            {sisaDetik <= 300 && <p className="text-[10px] font-semibold text-red-500">Waktu hampir habis!</p>}
+          <div className={`rounded-md border px-4 py-2 text-right ${sisaDetik <= 300 ? "border-[var(--danger)] bg-[var(--tint)]" : "border-[var(--border)] bg-[var(--surface)]"}`}>
+            <p className="text-[10px] font-medium uppercase text-[var(--muted)]">Sisa Waktu</p>
+            <p className={`text-lg font-semibold tabular-nums ${sisaDetik <= 300 ? "text-[var(--danger)]" : "text-[var(--fg)]"}`}>{formatTimer(sisaDetik)}</p>
+            {sisaDetik <= 300 && <p className="text-[10px] font-semibold text-[var(--danger)]">Waktu hampir habis!</p>}
           </div>
         )}
       </div>
@@ -304,23 +304,23 @@ export default function SiswaAsesmenKerjakanPage() {
               setActiveIndex(0);
             }}
             placeholder="Cari soal..."
-            className="min-w-[140px] flex-1 rounded-lg border border-[#D1D5DB] px-3 py-1.5 text-sm outline-none focus:border-[#658864]"
+            className={`${INPUT} min-w-[140px] flex-1`}
           />
           <div className="flex items-center gap-1">
-            <button onClick={() => setActiveIndex((i) => Math.max(0, i - 1))} disabled={activeIndex === 0} className="cursor-pointer rounded-lg border border-[#D1D5DB] px-2 py-1.5 text-xs font-semibold text-[#374151] disabled:opacity-40">
+            <button type="button" aria-label="Soal sebelumnya" onClick={() => setActiveIndex((i) => Math.max(0, i - 1))} disabled={activeIndex === 0} className="h-9 cursor-pointer rounded-md border border-[var(--border-strong)] px-3 text-xs font-medium text-[var(--fg)] disabled:opacity-40">
               {"<<"}
             </button>
-            <span className="px-2 text-xs font-semibold text-[#6B7280]">
+            <span className="px-2 text-xs font-medium tabular-nums text-[var(--muted)]">
               {soalTerfilter.length === 0 ? "0/0" : `${activeIndex + 1}/${soalTerfilter.length}`}
             </span>
-            <button onClick={() => setActiveIndex((i) => Math.min(soalTerfilter.length - 1, i + 1))} disabled={activeIndex >= soalTerfilter.length - 1} className="cursor-pointer rounded-lg border border-[#D1D5DB] px-2 py-1.5 text-xs font-semibold text-[#374151] disabled:opacity-40">
+            <button type="button" aria-label="Soal berikutnya" onClick={() => setActiveIndex((i) => Math.min(soalTerfilter.length - 1, i + 1))} disabled={activeIndex >= soalTerfilter.length - 1} className="h-9 cursor-pointer rounded-md border border-[var(--border-strong)] px-3 text-xs font-medium text-[var(--fg)] disabled:opacity-40">
               {">>"}
             </button>
             <button
               onClick={() => setShowGrid((v) => !v)}
               title={showGrid ? "Tutup daftar soal" : "Buka daftar soal"}
               aria-label={showGrid ? "Tutup daftar soal" : "Buka daftar soal"}
-              className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border text-[#374151] transition-colors ${showGrid ? "border-[#658864] bg-[#EEF2FF] text-[#658864]" : "border-[#D1D5DB] bg-[#FAF6EE] hover:bg-black/5"}`}
+              className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border transition-colors ${showGrid ? "border-[var(--brand)] bg-[var(--tint)] text-[var(--brand)]" : "border-[var(--border-strong)] text-[var(--muted)] hover:bg-[var(--tint)]"}`}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
                 <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -334,7 +334,7 @@ export default function SiswaAsesmenKerjakanPage() {
       )}
 
       {showGrid && (
-        <div className="mt-2 grid grid-cols-6 gap-1.5 rounded-xl border border-black/5 bg-[#FAF6EE] p-3 shadow-sm sm:grid-cols-10">
+        <div className={`${PANEL} mt-2 grid grid-cols-6 gap-1.5 p-3 sm:grid-cols-10`}>
           {soalTerfilter.map((s, i) => {
             const dijawab = (jawabanMap[s.id]?.opsiIds.length ?? 0) > 0 || !!jawabanMap[s.id]?.jawabanEssay;
             const ragu = jawabanMap[s.id]?.raguRagu;
@@ -345,16 +345,7 @@ export default function SiswaAsesmenKerjakanPage() {
                   setActiveIndex(i);
                   setShowGrid(false);
                 }}
-                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xs font-semibold"
-                style={
-                  i === activeIndex
-                    ? { background: "#658864", color: "white" }
-                    : ragu
-                    ? { background: "#FEF3C7", color: "#92400E" }
-                    : dijawab
-                    ? { background: "#DCFCE7", color: "#166534" }
-                    : { background: "#F3F4F6", color: "#374151" }
-                }
+                className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-xs font-semibold ${i === activeIndex ? "bg-[var(--brand)] text-[var(--on-brand)]" : ragu ? "border border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100" : dijawab ? "border border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100" : "border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)]"}`}
               >
                 {i + 1}
               </button>
@@ -363,9 +354,9 @@ export default function SiswaAsesmenKerjakanPage() {
         </div>
       )}
 
-      <div className="mt-4 min-h-[280px] rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
+      <div className={`${PANEL} mt-4 min-h-[280px]`}>
         {!currentSoal ? (
-          <p className="text-sm text-[#9CA3AF]">Belum ada soal.</p>
+          <p className="text-sm text-[var(--muted)]">Belum ada soal.</p>
         ) : (
           <div>
             <div className="flex items-start justify-between gap-2">
@@ -375,19 +366,14 @@ export default function SiswaAsesmenKerjakanPage() {
               {!isKuis && (
                 <button
                   onClick={() => handleToggleRagu(currentSoal.id)}
-                  className="cursor-pointer rounded-lg border px-2.5 py-1 text-xs font-semibold"
-                  style={
-                    jawabanSaatIni?.raguRagu
-                      ? { background: "#FEF3C7", borderColor: "#FDE68A", color: "#92400E" }
-                      : { borderColor: "#D1D5DB", color: "#374151" }
-                  }
+                  className={`h-9 cursor-pointer rounded-md border px-3 text-xs font-medium ${jawabanSaatIni?.raguRagu ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100" : "border-[var(--border-strong)] text-[var(--muted)] hover:bg-[var(--tint)]"}`}
                 >
                   Ragu-ragu
                 </button>
               )}
             </div>
 
-            <p className="mt-3 text-sm font-semibold text-[#111827]">
+            <p className="mt-3 text-sm font-semibold leading-6">
               {activeIndex + 1}. {currentSoal.pertanyaan}
             </p>
 
@@ -403,24 +389,25 @@ export default function SiswaAsesmenKerjakanPage() {
                 onBlur={() => !isKuis && simpanJawaban(currentSoal.id, { jawabanEssay: jawabanMap[currentSoal.id]?.jawabanEssay ?? "" })}
                 rows={5}
                 placeholder="Tulis jawabanmu di sini..."
-                className="mt-4 w-full rounded-lg border border-[#D1D5DB] px-3 py-2 text-sm outline-none focus:border-[#658864]"
+                className="mt-4 min-h-32 w-full rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-3 text-sm text-[var(--fg)] placeholder:text-[var(--muted)] focus:border-[var(--brand)]"
               />
             ) : (
               <div className="mt-4 space-y-2">
                 {currentSoal.opsi.map((o) => {
                   const dipilih = jawabanSaatIni?.opsiIds.includes(o.id) ?? false;
                   return (
-                    <label key={o.id} className={`flex cursor-pointer items-center gap-2 rounded-lg border p-2.5 text-sm ${dipilih ? "border-[#658864] bg-[#658864]/5" : "border-black/5"}`}>
+                    <label key={o.id} className={`flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm transition-colors ${dipilih ? "border-[var(--brand)] bg-[var(--tint)]" : "border-[var(--border)] hover:bg-[var(--tint)]"}`}>
                       <input
                         type={currentSoal.tipe === "PILIHAN_GANDA" ? "radio" : "checkbox"}
                         checked={dipilih}
+                        className="accent-[var(--brand)]"
                         onChange={() =>
                           currentSoal.tipe === "PILIHAN_GANDA"
                             ? handlePilihOpsiPG(currentSoal.id, o.id)
                             : handleToggleOpsiCB(currentSoal.id, o.id)
                         }
                       />
-                      <span className="text-[#374151]">{o.teks}</span>
+                      <span>{o.teks}</span>
                     </label>
                   );
                 })}
@@ -446,7 +433,7 @@ export default function SiswaAsesmenKerjakanPage() {
       )}
 
       {isKuis && (
-        <p className="mt-3 text-center text-xs text-[#9CA3AF]">
+        <p className="mt-3 text-center text-xs text-[var(--muted)]">
           Jawab soal untuk otomatis lanjut ke soal berikutnya. Kamu tidak bisa kembali ke soal sebelumnya.
         </p>
       )}
@@ -459,15 +446,15 @@ export default function SiswaAsesmenKerjakanPage() {
         maxWidth="max-w-md"
       >
         <div className="space-y-4">
-          <p className="text-sm leading-6 text-[#374151]">
+          <p className="text-sm leading-6 text-[var(--fg)]">
             Kamu keluar dari tab atau halaman asesmen. Klik <strong>Lanjut Asesmen</strong> untuk kembali mengerjakan.
           </p>
           {pelanggaranModal && pelanggaranModal.jumlahDireset > 0 ? (
-            <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/50 dark:text-red-100">
               Pelanggaran ke-{pelanggaranModal.violationCount}: {pelanggaranModal.jumlahDireset} jawaban pilihan ganda/checkbox direset. Jawaban essay tetap aman.
             </p>
           ) : pelanggaranModal && (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+            <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-100">
               Pelanggaran ke-{pelanggaranModal.violationCount} tercatat. Reset berikutnya terjadi pada pelanggaran ke-{pelanggaranModal.violationCount + (3 - (pelanggaranModal.violationCount % 3 || 3))}. Jawaban essay tetap aman.
             </p>
           )}

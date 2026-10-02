@@ -65,9 +65,9 @@ export default function ModalKirimPengumuman({ open, pengumumanId, onClose, onSu
     <Modal open={open} onClose={onClose} title="Kirim Pengumuman ke Kelas" maxWidth="max-w-lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Pilih kelas tujuan</label>
+          <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">Pilih kelas tujuan</label>
           <select
-            className="w-full rounded-lg border border-[#D1D5DB] px-3.5 py-2.5 text-sm outline-none focus:border-[#658864]"
+            className="w-full rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none focus:border-[var(--brand)]"
             value=""
             onChange={(event) => event.target.value && toggleKelas(event.target.value)}
           >
@@ -85,7 +85,7 @@ export default function ModalKirimPengumuman({ open, pengumumanId, onClose, onSu
             </div>
           )}
         </div>
-        {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+        {error && <p className="text-xs font-medium text-[var(--danger)]">{error}</p>}
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={onClose} className="flex-1">Batal</Button>
           <Button type="submit" loading={loading} className="flex-1">Kirim Pengumuman</Button>

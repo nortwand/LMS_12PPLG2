@@ -151,8 +151,8 @@ export default function SoalBuilder({ asesmenId, onSaved, editingSoal, onCancelE
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-      <p className="text-sm font-bold text-[#111827]">{isEditing ? "Edit Soal" : "Tambah Soal"}</p>
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
+      <p className="text-sm font-semibold text-[var(--fg)]">{isEditing ? "Edit Soal" : "Tambah Soal"}</p>
 
       <div className="grid grid-cols-3 gap-2">
         {(["PILIHAN_GANDA", "CHECKBOX", "ESSAY"] as TipeSoal[]).map((t) => (
@@ -160,12 +160,7 @@ export default function SoalBuilder({ asesmenId, onSaved, editingSoal, onCancelE
             key={t}
             type="button"
             onClick={() => setTipe(t)}
-            className="cursor-pointer rounded-lg border py-2 text-xs font-semibold transition-colors"
-            style={
-              tipe === t
-                ? { background: "#658864", borderColor: "#658864", color: "white" }
-                : { borderColor: "#D1D5DB", color: "#374151" }
-            }
+            className={`cursor-pointer rounded-md border py-2 text-xs font-semibold transition-colors ${tipe === t ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--on-brand)]" : "border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--tint)]"}`}
           >
             {t === "PILIHAN_GANDA" ? "Pilihan Ganda" : t === "CHECKBOX" ? "Checkbox" : "Essay"}
           </button>
@@ -182,7 +177,7 @@ export default function SoalBuilder({ asesmenId, onSaved, editingSoal, onCancelE
 
       {tipe !== "ESSAY" && (
         <div>
-          <label className="mb-1.5 block text-xs font-semibold text-[#374151]">
+          <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">
             Opsi Jawaban ({tipe === "PILIHAN_GANDA" ? "pilih 1 jawaban benar" : "bisa pilih lebih dari 1"})
           </label>
           <div className="space-y-2">
@@ -195,12 +190,12 @@ export default function SoalBuilder({ asesmenId, onSaved, editingSoal, onCancelE
                     tipe === "PILIHAN_GANDA" ? "rounded-full" : "rounded"
                   }`}
                   style={{
-                    borderColor: opsi.isBenar ? "#22C55E" : "#D1D5DB",
-                    background: opsi.isBenar ? "#22C55E" : "transparent",
+                    borderColor: opsi.isBenar ? "var(--brand)" : "var(--border-strong)",
+                    background: opsi.isBenar ? "var(--brand)" : "transparent",
                   }}
                 >
                   {opsi.isBenar && (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="h-3 w-3">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="h-3 w-3 text-[var(--on-brand)]">
                       <path d="M5 13l4 4L19 7" />
                     </svg>
                   )}
@@ -209,13 +204,13 @@ export default function SoalBuilder({ asesmenId, onSaved, editingSoal, onCancelE
                   value={opsi.teks}
                   onChange={(e) => handleOpsiTeksChange(i, e.target.value)}
                   placeholder={`Opsi ${i + 1}`}
-                  className="flex-1 rounded-lg border border-[#D1D5DB] px-3 py-2 text-sm outline-none focus:border-[#658864]"
+                  className="flex-1 rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--fg)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--brand)]"
                 />
                 {opsiList.length > 2 && (
                   <button
                     type="button"
                     onClick={() => handleRemoveOpsi(i)}
-                    className="cursor-pointer text-[#9CA3AF] hover:text-red-500"
+                    className="cursor-pointer text-[var(--muted)] hover:text-[var(--danger)]"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                       <path d="M18 6 6 18M6 6l12 12" />
@@ -228,14 +223,14 @@ export default function SoalBuilder({ asesmenId, onSaved, editingSoal, onCancelE
           <button
             type="button"
             onClick={handleAddOpsi}
-            className="mt-2 cursor-pointer text-xs font-semibold text-[#658864] hover:underline"
+            className="mt-2 cursor-pointer text-xs font-semibold text-[var(--link)] hover:underline"
           >
             + Tambah Opsi
           </button>
         </div>
       )}
 
-      {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+      {error && <p className="text-xs font-medium text-[var(--danger)]">{error}</p>}
 
       <div className="flex gap-2">
         {isEditing && (

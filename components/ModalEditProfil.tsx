@@ -96,12 +96,12 @@ export default function ModalEditProfil({
         <Input label="Nama" value={nama} onChange={(e) => setNama(e.target.value)} required />
         <Textarea label="Deskripsi" value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} />
 
-        <label className="block text-xs font-semibold text-[#374151]">
+        <label className="block text-xs font-semibold text-[var(--muted)]">
           Foto Profil
           <input
             type="file"
             accept="image/*"
-            className="mt-1 block w-full rounded-lg border border-[#D1D5DB] bg-[#FAF6EE] px-3 py-2 text-sm text-[#334155]"
+            className="mt-1 block w-full rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--fg)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--tint)] file:px-2 file:py-1 file:text-xs file:font-medium file:text-[var(--fg)]"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
@@ -110,7 +110,7 @@ export default function ModalEditProfil({
           />
         </label>
 
-        {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+        {error && <p className="text-xs font-medium text-[var(--danger)]">{error}</p>}
 
         <Button type="submit" loading={loading} className="w-full">Simpan Profil</Button>
       </form>

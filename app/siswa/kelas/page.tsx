@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import KelasCard, { KelasData } from "@/components/KelasCard";
+import { PageTitle, PANEL } from "@/app/guru/_ui";
 
 export default function SiswaKelasPage() {
   const [kelasList, setKelasList] = useState<KelasData[]>([]);
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,35 +34,55 @@ export default function SiswaKelasPage() {
     }
   }
 
-  return (
-    <div>
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">Kelas Saya</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#111827]">Daftar Kelas</h1>
-        <p className="mt-1 text-sm text-[#64748B]">Kelas yang sudah ditugaskan untukmu oleh admin.</p>
-      </div>
+  const filteredKelas = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return kelasList;
+    return kelasList.filter((kelas) =>
+      `${kelas.judul} ${kelas.deskripsi ?? ""}`.toLowerCase().includes(normalizedQuery)
+    );
+  }, [kelasList, query]);
 
-      {loading && <p className="mt-4 text-sm text-[#9CA3AF]">Memuat kelas...</p>}
+  return (
+    <div className="space-y-6">
+      <PageTitle title="Kelas Saya" desc="Buka ruang kelas untuk melihat pengumuman dan kegiatan belajar." />
+
+      {loading && <p className="text-sm text-[var(--muted)]">Memuat kelas...</p>}
 
       {!loading && error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div role="alert" className="rounded-lg border border-[var(--danger)] bg-[var(--tint)] p-4 text-sm text-[var(--danger)]">
           {error}
         </div>
       )}
 
       {!loading && !error && kelasList.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-[#CBD5E1] bg-[#FAF6EE] p-6 text-center shadow-sm">
-          <p className="text-lg font-semibold text-[#111827]">Belum ada kelas</p>
-          <p className="mt-2 text-sm text-[#64748B]">Kamu belum tergabung di kelas yang dibuat admin.</p>
+        <div className="rounded-lg border border-dashed border-[var(--border-strong)] bg-[var(--surface)] p-6 text-center">
+          <p className="text-base font-semibold">Belum ada kelas</p>
+          <p className="mt-2 text-sm text-[var(--muted)]">Kamu belum tergabung di kelas yang dibuat admin.</p>
         </div>
       )}
 
       {!loading && !error && kelasList.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {kelasList.map((kelas) => (
-            <KelasCard key={kelas.id} data={kelas} isEditable={false} basePath="/siswa/kelas" />
-          ))}
-        </div>
+        <section className={PANEL}>
+          <label className="block max-w-md text-xs font-medium text-[var(--muted)]">
+            Cari kelas
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Nama atau deskripsi kelas"
+              className="mt-1 h-10 w-full rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-sm font-normal text-[var(--fg)] placeholder:text-[var(--muted)] focus:border-[var(--brand)]"
+            />
+          </label>
+          {filteredKelas.length === 0 ? (
+            <p className="mt-5 text-sm text-[var(--muted)]">Tidak ada kelas yang cocok dengan pencarian.</p>
+          ) : (
+            <div className="mt-4">
+              {filteredKelas.map((kelas) => (
+                <KelasCard key={kelas.id} data={kelas} variant="list" basePath="/siswa/kelas" />
+              ))}
+            </div>
+          )}
+        </section>
       )}
     </div>
   );

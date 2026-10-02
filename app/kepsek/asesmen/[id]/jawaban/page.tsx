@@ -71,18 +71,18 @@ export default function KepsekJawabanPage() {
     [hasil, selectedKelasId]
   );
 
-  if (loading) return <KepsekShell><p className="mx-auto max-w-7xl px-4 text-sm text-[#9CA3AF] sm:px-6">Memuat jawaban...</p></KepsekShell>;
-  if (!hasil) return <KepsekShell><p className="mx-auto max-w-7xl px-4 text-sm text-red-500 sm:px-6">{error || "Jawaban tidak ditemukan."}</p></KepsekShell>;
+  if (loading) return <KepsekShell activeTab="ASESMEN"><p role="status" className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--muted)]">Memuat jawaban...</p></KepsekShell>;
+  if (!hasil) return <KepsekShell activeTab="ASESMEN"><p role="alert" className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--fg)]">{error || "Jawaban tidak ditemukan."}</p></KepsekShell>;
 
   return (
     <KepsekShell activeTab="ASESMEN"><div className="mx-auto w-full max-w-7xl px-4 pb-10 sm:px-6">
-      <Link href={`/kepsek/asesmen/${asesmenId}`} className="text-sm font-semibold text-[#64748B] hover:text-[#658864]">
+      <Link href={`/kepsek/asesmen/${asesmenId}`} className="inline-flex min-h-10 items-center text-sm font-medium text-[var(--link)] hover:underline">
         &larr; Kembali ke Asesmen
       </Link>
 
-      <div className="mt-4 rounded-xl border border-black/5 border-t-4 border-t-[#658864] bg-[#FAF6EE] p-6 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">Jawaban Siswa</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#111827]">{hasil.asesmen.judul}</h1>
+      <div className="mt-3 border-b border-[var(--border)] pb-5">
+        <p className="text-xs font-medium text-[var(--muted)]">Jawaban Siswa</p>
+        <h1 className="mt-1 text-xl font-semibold text-[var(--fg)]">{hasil.asesmen.judul}</h1>
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge tone="brand">{hasil.asesmen.tipe === "KUIS" ? "Kuis" : "Ujian Online"}</Badge>
           {hasil.asesmen.mapel && <Badge tone="gray">{hasil.asesmen.mapel}</Badge>}
@@ -90,13 +90,13 @@ export default function KepsekJawabanPage() {
         </div>
       </div>
 
-      {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+      {error && <p role="alert" className="mt-4 rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--fg)]">{error}</p>}
 
       <div className="mt-6">
-        <h2 className="mb-3 text-base font-bold text-[#111827]">Daftar Perkelas</h2>
+        <h2 className="mb-3 text-sm font-semibold text-[var(--fg)]">Daftar Per Kelas</h2>
 
         {kelasTujuan.length === 0 ? (
-          <p className="text-sm text-[#94A3B8]">Belum ada kelas tujuan.</p>
+          <p className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--muted)]">Belum ada kelas tujuan.</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {kelasTujuan.map(({ kelas }) => {
@@ -106,11 +106,12 @@ export default function KepsekJawabanPage() {
                 <button
                   key={kelas.id}
                   onClick={() => setSelectedKelasId(active ? null : kelas.id)}
-                  className="rounded-xl border bg-[#FAF6EE] p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                  style={active ? { borderColor: "#658864", boxShadow: "0 0 0 2px #65886433" } : { borderColor: "#E5E7EB" }}
+                  type="button"
+                  aria-pressed={active}
+                  className={`min-h-20 rounded-md border p-4 text-left transition-colors ${active ? "border-[var(--brand)] bg-[var(--tint)]" : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--tint)]"}`}
                 >
-                  <p className="font-bold text-[#111827]">{kelas.judul}</p>
-                  <p className="mt-1 text-xs text-[#64748B]">{count} siswa mengumpulkan jawaban</p>
+                  <p className="text-sm font-semibold text-[var(--fg)]">{kelas.judul}</p>
+                  <p className="mt-1 text-xs text-[var(--muted)]">{count} siswa mengumpulkan jawaban</p>
                 </button>
               );
             })}

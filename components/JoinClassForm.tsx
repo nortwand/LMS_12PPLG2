@@ -61,26 +61,26 @@ export default function JoinClassForm({ onSuccess }: JoinClassFormProps) {
   }
 
   return (
-    <div className="mb-5 rounded-2xl border border-black/5 bg-[#FAF6EE] p-4 shadow-sm">
+    <div className="mb-5 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="Masukkan kode kelas atau link undangan"
-          className="min-w-0 flex-1 rounded-lg border border-[#D1D5DB] px-3.5 py-2.5 text-sm outline-none transition-shadow focus:border-[#658864] focus:ring-2 focus:ring-[#658864]/20"
+          className="min-w-0 flex-1 rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none placeholder:text-[var(--muted)] transition-colors focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/20"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !value.trim()}
-          className="rounded-lg bg-[#658864] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#557654] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-[var(--on-brand)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Memproses..." : "Gabung Kelas"}
         </button>
       </form>
-      {error && <p className="mt-2 text-xs font-medium text-red-500">{error}</p>}
-      {success && <p className="mt-2 text-xs font-medium text-green-600">{success}</p>}
+      {error && <p className="mt-2 text-xs font-medium text-[var(--danger)]">{error}</p>}
+      {success && <p className="mt-2 text-xs font-medium text-[var(--link)]">{success}</p>}
     </div>
   );
 }

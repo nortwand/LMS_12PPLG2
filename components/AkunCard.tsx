@@ -39,10 +39,9 @@ export default function AkunCard({ data, isEditable = false, onEdit, onDelete }:
   return (
     <div
       onClick={() => router.push(`/profil/${data.id}`)}
-      className="group relative flex cursor-pointer items-start gap-3 overflow-hidden rounded-2xl p-4 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-      style={{ background: "#658864" }}
+      className="group relative flex cursor-pointer items-start gap-3 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-[var(--fg)] transition-colors hover:bg-[var(--tint)]"
     >
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#FAF6EE]/20 text-sm font-bold">
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--tint)] text-sm font-bold text-[var(--muted)]">
         {data.fotoProfil ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={data.fotoProfil} alt={data.nama} className="h-full w-full object-cover" />
@@ -53,24 +52,26 @@ export default function AkunCard({ data, isEditable = false, onEdit, onDelete }:
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-bold">{data.nama}</p>
-          <Badge tone="gray" className="!bg-[#FAF6EE]/20 !text-white">
+          <p className="truncate text-sm font-semibold">{data.nama}</p>
+          <Badge tone="brand">
             {data.role === "SISWA" ? "Siswa" : "Guru"}
           </Badge>
         </div>
-        <p className="truncate text-xs text-white/80">{data.email}</p>
-        <p className="mt-0.5 text-[11px] text-white/70">
+        <p className="truncate text-xs text-[var(--muted)]">{data.email}</p>
+        <p className="mt-0.5 text-[11px] text-[var(--muted)]">
           {data.role === "SISWA" ? "NIS" : "NIK"}: {data.role === "SISWA" ? data.nis : data.nik}
         </p>
-        <p className="mt-1 truncate text-[11px] font-medium text-white/90">{subInfo}</p>
-        {data.deskripsi && <p className="mt-1 line-clamp-2 text-[11px] italic text-white/70">&quot;{data.deskripsi}&quot;</p>}
+        <p className="mt-1 truncate text-[11px] font-medium text-[var(--fg)]">{subInfo}</p>
+        {data.deskripsi && <p className="mt-1 line-clamp-2 text-[11px] text-[var(--muted)]">&quot;{data.deskripsi}&quot;</p>}
       </div>
 
       {isEditable && (
         <div className="relative flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-white/80 transition-colors hover:bg-[#FAF6EE]/20"
+            type="button"
+            aria-label="Menu akun"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[var(--muted)] transition-colors hover:bg-[var(--tint)]"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
               <circle cx="12" cy="5" r="1.5" />
@@ -80,13 +81,13 @@ export default function AkunCard({ data, isEditable = false, onEdit, onDelete }:
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-8 z-20 w-28 overflow-hidden rounded-lg border border-black/5 bg-[#FAF6EE] shadow-lg">
+            <div className="absolute right-0 top-9 z-20 w-28 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)]">
               <button
                 onClick={() => {
                   setMenuOpen(false);
                   onEdit?.(data);
                 }}
-                className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[#374151] hover:bg-black/5"
+                className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[var(--fg)] hover:bg-[var(--tint)]"
               >
                 Edit
               </button>
@@ -95,7 +96,7 @@ export default function AkunCard({ data, isEditable = false, onEdit, onDelete }:
                   setMenuOpen(false);
                   onDelete?.(data.id);
                 }}
-                className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-red-500 hover:bg-red-50"
+                className="block w-full cursor-pointer px-3 py-2 text-left text-xs font-medium text-[var(--danger)] hover:bg-[var(--tint)]"
               >
                 Hapus
               </button>

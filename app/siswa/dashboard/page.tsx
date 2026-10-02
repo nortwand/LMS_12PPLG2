@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Badge from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
 import MateriCard, { MateriData } from "@/components/MateriCard";
+import { LinkBtn, PageTitle, PANEL } from "@/app/guru/_ui";
 
 type DashboardData = {
   siswa: {
@@ -66,10 +66,10 @@ type DashboardData = {
 
 function StatCard({ label, value, helper }: { label: string; value: string; helper: string }) {
   return (
-    <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-[#111827]">{value}</p>
-      <p className="mt-1 text-xs text-[#64748B]">{helper}</p>
+    <div className="bg-[var(--surface)] p-4">
+      <p className="text-xs font-medium text-[var(--muted)]">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-1 text-xs text-[var(--muted)]">{helper}</p>
     </div>
   );
 }
@@ -118,13 +118,13 @@ export default function SiswaDashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-          <div className="h-6 w-48 animate-pulse rounded bg-slate-200" />
-          <div className="mt-4 h-10 w-72 animate-pulse rounded bg-slate-200" />
+        <div className={PANEL}>
+          <div className="h-6 w-48 animate-pulse rounded bg-[var(--tint)]" />
+          <div className="mt-4 h-10 w-72 animate-pulse rounded bg-[var(--tint)]" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--border)] xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-32 animate-pulse rounded-2xl bg-[#FAF6EE] p-5 shadow-sm" />
+            <div key={index} className="h-28 animate-pulse bg-[var(--surface)] p-4" />
           ))}
         </div>
       </div>
@@ -133,8 +133,8 @@ export default function SiswaDashboardPage() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm">
-        <p className="text-lg font-bold">Gagal memuat dashboard</p>
+      <div className="rounded-lg border border-[var(--danger)] bg-[var(--tint)] p-6 text-[var(--danger)]">
+        <p className="text-base font-semibold">Gagal memuat dashboard</p>
         <p className="mt-2 text-sm">{error}</p>
       </div>
     );
@@ -142,84 +142,77 @@ export default function SiswaDashboardPage() {
 
   if (!data) {
     return (
-      <div className="rounded-2xl border border-dashed border-[#CBD5E1] bg-[#FAF6EE] p-6 text-center shadow-sm">
-        <p className="text-lg font-semibold text-[#111827]">Belum ada data</p>
-        <p className="mt-2 text-sm text-[#64748B]">Belum ada aktivitas kelas, tugas, atau asesmen untuk akun Anda.</p>
+      <div className="rounded-lg border border-dashed border-[var(--border-strong)] bg-[var(--surface)] p-6 text-center">
+        <p className="text-base font-semibold">Belum ada data</p>
+        <p className="mt-2 text-sm text-[var(--muted)]">Belum ada aktivitas kelas, tugas, atau asesmen untuk akun Anda.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl p-6 text-white shadow-sm" style={{ background: "#658864" }}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/75">Dashboard Siswa</p>
-        <h1 className="mt-2 text-2xl font-bold">Selamat Datang, {data.siswa.nama}</h1>
-        <p className="mt-2 text-sm text-white/85">{data.siswa.kelasJurusan}</p>
-      </div>
+      <PageTitle
+        title={`Selamat datang, ${data.siswa.nama}`}
+        desc={`Ringkasan kelas dan kegiatan belajarmu${data.siswa.kelasJurusan ? ` · ${data.siswa.kelasJurusan}` : ""}.`}
+      />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--border)] xl:grid-cols-4">
         <StatCard label="Total Kelas" value={String(data.statistik.totalKelas)} helper="Kelas yang diikuti" />
         <StatCard label="Total Asesmen" value={String(data.statistik.totalAsesmen)} helper="Kuis & ujian" />
         <StatCard label="Asesmen Selesai" value={String(data.statistik.asesmenSudah)} helper="Sudah dikerjakan" />
         <StatCard label="Asesmen Sedang" value={String(data.statistik.asesmenSedang)} helper="Dikerjakan saat ini" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--border)] xl:grid-cols-4">
         <StatCard label="Asesmen Belum" value={String(data.statistik.asesmenBelum)} helper="Belum dikerjakan" />
         <StatCard label="Total Tugas" value={String(data.statistik.totalTugas)} helper="Tugas yang tersedia" />
         <StatCard label="Tugas Sudah" value={String(data.statistik.tugasSudah)} helper="Sudah dikumpulkan" />
         <StatCard label="Tugas Belum" value={String(data.statistik.tugasBelum)} helper="Belum dikumpulkan" />
       </div>
 
-      <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
+      <section className={`${PANEL} flex flex-wrap items-center justify-between gap-3`}>
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-bold text-[#111827]">Rata-rata Nilai Asesmen</p>
+          <p className="text-sm font-semibold">Rata-rata Nilai Asesmen</p>
           <Badge tone={data.statistik.rataRataNilai !== null ? "green" : "gray"}>
             {data.statistik.rataRataNilai !== null ? `${data.statistik.rataRataNilai}` : "Belum ada nilai"}
           </Badge>
         </div>
-      </div>
+      </section>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
+        <section className={PANEL}>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-[#111827]">Aksi Cepat</p>
+            <p className="text-sm font-semibold">Aksi Cepat</p>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            <Link href="/siswa/asesmen">
-              <Button className="w-full" size="sm">Kerjakan Asesmen</Button>
-            </Link>
-            <Link href="/siswa/tugas">
-              <Button className="w-full" size="sm" variant="outline">Lihat Tugas</Button>
-            </Link>
-            <Link href="/siswa/materi">
-              <Button className="w-full" size="sm" variant="outline">Lihat Materi</Button>
-            </Link>
+            <LinkBtn href="/siswa/asesmen" size="sm">Kerjakan Asesmen</LinkBtn>
+            <LinkBtn href="/siswa/tugas" size="sm" variant="outline">Lihat Tugas</LinkBtn>
+            <LinkBtn href="/siswa/materi" size="sm" variant="outline">Lihat Materi</LinkBtn>
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-          <p className="text-sm font-bold text-[#111827]">Materi Hari Ini</p>
+        <section className={PANEL}>
+          <p className="text-sm font-semibold">Materi Hari Ini</p>
           <div className="mt-3 space-y-3">
             {data.materiHariIni.length === 0 ? (
-              <p className="text-sm text-[#94A3B8]">Belum ada materi baru hari ini.</p>
+              <p className="text-sm text-[var(--muted)]">Belum ada materi baru hari ini.</p>
             ) : (
               <div className="space-y-2">{data.materiHariIni.map((item) => <MateriCard key={item.id} data={item} />)}</div>
             )}
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-          <p className="text-sm font-bold text-[#111827]">Nilai Terbaru</p>
+        <section className={PANEL}>
+          <p className="text-sm font-semibold">Nilai Terbaru</p>
           <div className="mt-3 space-y-3">
             {data.nilaiTerbaru.length === 0 ? (
-              <p className="text-sm text-[#94A3B8]">Belum ada nilai yang tersedia.</p>
+              <p className="text-sm text-[var(--muted)]">Belum ada nilai yang tersedia.</p>
             ) : (
               data.nilaiTerbaru.map((item) => (
-                <div key={item.id} className="flex items-center justify-between rounded-xl bg-[#F8FAFC] px-3 py-2">
+                <div key={item.id} className="flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--tint)] px-3 py-2">
                   <div>
-                    <p className="text-sm font-semibold text-[#111827]">{item.judul}</p>
-                    <p className="text-xs text-[#64748B]">{item.mapel}</p>
+                    <p className="text-sm font-medium">{item.judul}</p>
+                    <p className="text-xs text-[var(--muted)]">{item.mapel}</p>
                   </div>
                   <Badge tone={item.nilai !== null && item.nilai >= 75 ? "green" : item.nilai !== null ? "amber" : "gray"}>
                     {item.nilai !== null ? `${item.nilai}` : "-"}
@@ -228,22 +221,22 @@ export default function SiswaDashboardPage() {
               ))
             )}
           </div>
-        </div>
+        </section>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-          <p className="text-sm font-bold text-[#111827]">Asesmen Terbaru</p>
+        <section className={PANEL}>
+          <p className="text-sm font-semibold">Asesmen Terbaru</p>
           <div className="mt-3 space-y-3">
             {data.asesmenTerbaru.length === 0 ? (
-              <p className="text-sm text-[#94A3B8]">Belum ada asesmen.</p>
+              <p className="text-sm text-[var(--muted)]">Belum ada asesmen.</p>
             ) : (
               data.asesmenTerbaru.map((item) => (
-                <Link key={item.id} href={`/siswa/asesmen/${item.id}`} className="block rounded-xl border border-[#E2E8F0] p-3 transition hover:bg-[#F8FAFC]">
+                <Link key={item.id} href={`/siswa/asesmen/${item.id}`} className="block rounded-md border border-[var(--border)] p-3 transition hover:bg-[var(--tint)]">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-[#111827]">{item.judul}</p>
-                      <p className="text-xs text-[#64748B]">{item.mapel?.nama ?? "Umum"}</p>
+                      <p className="text-sm font-medium">{item.judul}</p>
+                      <p className="text-xs text-[var(--muted)]">{item.mapel?.nama ?? "Umum"}</p>
                     </div>
                     <Badge tone={item.statusSubmission === "SUDAH" ? "green" : item.statusSubmission === "SEDANG" ? "amber" : "red"}>
                       {item.statusSubmission === "SUDAH" ? "Selesai" : item.statusSubmission === "SEDANG" ? "Sedang" : "Belum"}
@@ -253,20 +246,20 @@ export default function SiswaDashboardPage() {
               ))
             )}
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-          <p className="text-sm font-bold text-[#111827]">Tugas Terbaru</p>
+        <section className={PANEL}>
+          <p className="text-sm font-semibold">Tugas Terbaru</p>
           <div className="mt-3 space-y-3">
             {data.tugasTerbaru.length === 0 ? (
-              <p className="text-sm text-[#94A3B8]">Belum ada tugas.</p>
+              <p className="text-sm text-[var(--muted)]">Belum ada tugas.</p>
             ) : (
               data.tugasTerbaru.map((item) => (
-                <Link key={item.id} href="/siswa/tugas" className="block rounded-xl border border-[#E2E8F0] p-3 transition hover:bg-[#F8FAFC]">
+                <Link key={item.id} href="/siswa/tugas" className="block rounded-md border border-[var(--border)] p-3 transition hover:bg-[var(--tint)]">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-[#111827]">{item.judul}</p>
-                      <p className="text-xs text-[#64748B]">{item.mapel?.nama ?? "Umum"}</p>
+                      <p className="text-sm font-medium">{item.judul}</p>
+                      <p className="text-xs text-[var(--muted)]">{item.mapel?.nama ?? "Umum"}</p>
                     </div>
                     <Badge tone={item.statusSubmission === "SUDAH" ? "green" : "red"}>
                       {item.statusSubmission === "SUDAH" ? "Sudah" : "Belum"}
@@ -276,38 +269,38 @@ export default function SiswaDashboardPage() {
               ))
             )}
           </div>
-        </div>
+        </section>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-          <p className="text-sm font-bold text-[#111827]">Tugas yang Belum Dikumpulkan</p>
+        <section className={PANEL}>
+          <p className="text-sm font-semibold">Tugas yang Belum Dikumpulkan</p>
           <div className="mt-3 space-y-3">
             {data.tugasBelumDikumpulkan.length === 0 ? (
-              <p className="text-sm text-[#94A3B8]">Semua tugas sudah dikumpulkan.</p>
+              <p className="text-sm text-[var(--muted)]">Semua tugas sudah dikumpulkan.</p>
             ) : (
               data.tugasBelumDikumpulkan.map((item) => (
-                <Link key={item.id} href="/siswa/tugas" className="block rounded-xl border border-[#E2E8F0] p-3 transition hover:bg-[#F8FAFC]">
-                  <p className="text-sm font-semibold text-[#111827]">{item.judul}</p>
-                  <p className="text-xs text-[#64748B]">{item.mapel?.nama ?? "Umum"}</p>
+                <Link key={item.id} href="/siswa/tugas" className="block rounded-md border border-[var(--border)] p-3 transition hover:bg-[var(--tint)]">
+                  <p className="text-sm font-medium">{item.judul}</p>
+                  <p className="text-xs text-[var(--muted)]">{item.mapel?.nama ?? "Umum"}</p>
                 </Link>
               ))
             )}
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
-          <p className="text-sm font-bold text-[#111827]">Asesmen yang Sedang Dikerjakan</p>
+        <section className={PANEL}>
+          <p className="text-sm font-semibold">Asesmen yang Sedang Dikerjakan</p>
           <div className="mt-3 space-y-3">
             {data.asesmenSedangDikerjakan.length === 0 ? (
-              <p className="text-sm text-[#94A3B8]">Tidak ada asesmen yang sedang dikerjakan.</p>
+              <p className="text-sm text-[var(--muted)]">Tidak ada asesmen yang sedang dikerjakan.</p>
             ) : (
               data.asesmenSedangDikerjakan.map((item) => (
-                <Link key={item.id} href={`/siswa/asesmen/${item.id}`} className="block rounded-xl border border-[#E2E8F0] p-3 transition hover:bg-[#F8FAFC]">
+                <Link key={item.id} href={`/siswa/asesmen/${item.id}`} className="block rounded-md border border-[var(--border)] p-3 transition hover:bg-[var(--tint)]">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-[#111827]">{item.judul}</p>
-                      <p className="text-xs text-[#64748B]">{item.mapel?.nama ?? "Umum"}</p>
+                      <p className="text-sm font-medium">{item.judul}</p>
+                      <p className="text-xs text-[var(--muted)]">{item.mapel?.nama ?? "Umum"}</p>
                     </div>
                     <Badge tone="amber">Sedang</Badge>
                   </div>
@@ -315,7 +308,7 @@ export default function SiswaDashboardPage() {
               ))
             )}
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

@@ -2,8 +2,7 @@
 
 import { InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, forwardRef } from "react";
 
-const focusRing = "focus:border-[#658864] focus:ring-2 focus:ring-[#658864]/20";
-const baseField = `w-full rounded-lg border border-[#D1D5DB] px-3.5 py-2.5 text-sm outline-none transition-shadow ${focusRing}`;
+const baseField = "w-full rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/20";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -13,9 +12,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, className = "", ...props }, ref) => (
     <div className="w-full">
-      {label && <label className="mb-1.5 block text-xs font-semibold text-[#374151]">{label}</label>}
-      <input ref={ref} className={`${baseField} ${error ? "border-red-400" : ""} ${className}`} {...props} />
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {label && <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">{label}</label>}
+      <input ref={ref} className={`${baseField} ${error ? "border-[var(--danger)]" : ""} ${className}`} {...props} />
+      {error && <p className="mt-1 text-xs text-[var(--danger)]">{error}</p>}
     </div>
   )
 );
@@ -29,14 +28,14 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, className = "", ...props }, ref) => (
     <div className="w-full">
-      {label && <label className="mb-1.5 block text-xs font-semibold text-[#374151]">{label}</label>}
+      {label && <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">{label}</label>}
       <textarea
         ref={ref}
         rows={3}
-        className={`${baseField} resize-none ${error ? "border-red-400" : ""} ${className}`}
+        className={`${baseField} resize-none ${error ? "border-[var(--danger)]" : ""} ${className}`}
         {...props}
       />
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-[var(--danger)]">{error}</p>}
     </div>
   )
 );
@@ -51,8 +50,8 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, placeholder, className = "", children, ...props }, ref) => (
     <div className="w-full">
-      {label && <label className="mb-1.5 block text-xs font-semibold text-[#374151]">{label}</label>}
-      <select ref={ref} className={`${baseField} bg-[#FAF6EE] ${error ? "border-red-400" : ""} ${className}`} {...props}>
+      {label && <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">{label}</label>}
+      <select ref={ref} className={`${baseField} ${error ? "border-[var(--danger)]" : ""} ${className}`} {...props}>
         {placeholder && (
           <option value="" disabled>
             {placeholder}
@@ -60,7 +59,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         )}
         {children}
       </select>
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-[var(--danger)]">{error}</p>}
     </div>
   )
 );

@@ -187,24 +187,14 @@ export default function ModalBuatAsesmen({ open, onClose, onSuccess, defaultKela
             <button
               type="button"
               onClick={() => setSumber("BARU")}
-              className="cursor-pointer rounded-lg border py-2 text-xs font-semibold transition-colors"
-              style={
-                sumber === "BARU"
-                  ? { background: "#658864", borderColor: "#658864", color: "white" }
-                  : { borderColor: "#D1D5DB", color: "#374151" }
-              }
+              className={`cursor-pointer rounded-md border py-2 text-xs font-semibold transition-colors ${sumber === "BARU" ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--on-brand)]" : "border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--tint)]"}`}
             >
               Buat Baru
             </button>
             <button
               type="button"
               onClick={() => setSumber("EXISTING")}
-              className="cursor-pointer rounded-lg border py-2 text-xs font-semibold transition-colors"
-              style={
-                sumber === "EXISTING"
-                  ? { background: "#658864", borderColor: "#658864", color: "white" }
-                  : { borderColor: "#D1D5DB", color: "#374151" }
-              }
+              className={`cursor-pointer rounded-md border py-2 text-xs font-semibold transition-colors ${sumber === "EXISTING" ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--on-brand)]" : "border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--tint)]"}`}
             >
               Kirim dari Asesmen
             </button>
@@ -234,12 +224,7 @@ export default function ModalBuatAsesmen({ open, onClose, onSuccess, defaultKela
                     key={t}
                     type="button"
                     onClick={() => setTipe(t)}
-                    className="cursor-pointer rounded-lg border py-2 text-xs font-semibold transition-colors"
-                    style={
-                      tipe === t
-                        ? { background: "#658864", borderColor: "#658864", color: "white" }
-                        : { borderColor: "#D1D5DB", color: "#374151" }
-                    }
+                    className={`cursor-pointer rounded-md border py-2 text-xs font-semibold transition-colors ${tipe === t ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--on-brand)]" : "border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--tint)]"}`}
                   >
                     {t === "KUIS" ? "Kuis" : "Ujian Online"}
                   </button>
@@ -265,7 +250,7 @@ export default function ModalBuatAsesmen({ open, onClose, onSuccess, defaultKela
               onChange={(e) => setDurasiMenit(e.target.value)}
             />
             {durasiMenit && Number(durasiMenit) < (tipe === "KUIS" ? 10 : 20) && (
-              <p className="-mt-2 text-xs font-medium text-red-500">
+              <p className="-mt-2 text-xs font-medium text-[var(--danger)]">
                 {tipe === "KUIS" ? "Kuis" : "Ujian Online"} minimal berdurasi {tipe === "KUIS" ? 10 : 20} menit.
               </p>
             )}
@@ -275,11 +260,11 @@ export default function ModalBuatAsesmen({ open, onClose, onSuccess, defaultKela
         )}
 
         <div>
-          <label className="mb-1.5 block text-xs font-semibold text-[#374151]">
-            Kirim ke Kelas {sumber === "BARU" && <span className="font-normal text-[#9CA3AF]">(opsional)</span>}
+          <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">
+            Kirim ke Kelas {sumber === "BARU" && <span className="font-normal">(opsional)</span>}
           </label>
           <select
-            className="w-full rounded-lg border border-[#D1D5DB] px-3.5 py-2.5 text-sm outline-none focus:border-[#658864]"
+            className="w-full rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none focus:border-[var(--brand)]"
             value=""
             onChange={(e) => e.target.value && toggleKelas(e.target.value)}
           >
@@ -300,7 +285,7 @@ export default function ModalBuatAsesmen({ open, onClose, onSuccess, defaultKela
                 return (
                   <Badge key={id} tone="brand" className="flex items-center gap-1">
                     {k?.label}
-                    <button type="button" onClick={() => toggleKelas(id)} className="cursor-pointer hover:text-red-500">
+                    <button type="button" onClick={() => toggleKelas(id)} className="cursor-pointer hover:text-[var(--danger)]">
                       ×
                     </button>
                   </Badge>
@@ -311,13 +296,13 @@ export default function ModalBuatAsesmen({ open, onClose, onSuccess, defaultKela
         </div>
 
         {sumber === "BARU" && (
-          <p className="rounded-lg bg-[#FAF6EE] p-3 text-xs text-[#6B7280]">
+          <p className="rounded-md border border-[var(--border)] bg-[var(--tint)] p-3 text-xs text-[var(--muted)]">
             Setelah dibuat, asesmen berstatus <strong>Proses</strong> — tambahkan soal dulu, baru klik &quot;Selesaikan
             Asesmen&quot; supaya muncul di kelas.
           </p>
         )}
 
-        {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+        {error && <p className="text-xs font-medium text-[var(--danger)]">{error}</p>}
 
         <Button type="submit" loading={loading} className="w-full">
           {sumber === "EXISTING" ? "Kirim ke Kelas" : "Lanjut Tambah Soal"}

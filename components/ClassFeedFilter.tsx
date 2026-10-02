@@ -15,9 +15,11 @@ export function filterClassFeed<T extends { tipe: string }>(items: T[], filter: 
 export default function ClassFeedFilter({
   value,
   onChange,
+  themed = false,
 }: {
   value: ClassFeedType;
   onChange: (value: ClassFeedType) => void;
+  themed?: boolean;
 }) {
   return (
     <div aria-label="Filter aktivitas kelas" className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
@@ -27,10 +29,14 @@ export default function ClassFeedFilter({
           type="button"
           aria-pressed={value === filter.value}
           onClick={() => onChange(filter.value)}
-          className={`min-h-10 border px-3 py-2 text-left text-xs font-semibold transition-colors sm:w-auto ${
-            value === filter.value
-              ? "border-[#365C3A] bg-[#365C3A] text-white"
-              : "border-[#CBD5E1] bg-white text-[#475569] hover:border-[#365C3A]"
+          className={`min-h-10 rounded-md border px-3 py-2 text-left text-xs font-medium transition-colors sm:w-auto ${
+            themed
+              ? value === filter.value
+                ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--on-brand)]"
+                : "border-[var(--border-strong)] bg-[var(--surface)] text-[var(--muted)] hover:bg-[var(--tint)]"
+              : value === filter.value
+                ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--on-brand)]"
+                : "border-[var(--border-strong)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--brand)] hover:bg-[var(--tint)]"
           }`}
         >
           {filter.label}

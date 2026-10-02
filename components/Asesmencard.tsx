@@ -73,12 +73,12 @@ export default function AsesmenCard({ data, basePath = "/guru/asesmen", submissi
             )}
             {(onEdit || onSend || onDelete) && (
               <div className="relative" data-options-menu>
-                <button type="button" aria-label="Opsi asesmen" onClick={(event) => { event.stopPropagation(); setShowOptions((value) => !value); }} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-lg font-bold text-[#64748B] hover:bg-[#F1F5F9]">⋯</button>
+                <button type="button" aria-label="Opsi asesmen" onClick={(event) => { event.stopPropagation(); setShowOptions((value) => !value); }} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-lg font-bold text-[var(--muted)] hover:bg-[var(--tint)]">⋯</button>
                 {showOptions && (
-                  <div onClick={(event) => event.stopPropagation()} className="absolute right-0 top-9 z-20 w-32 overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#FAF6EE] py-1 text-left shadow-lg">
-                    {onEdit && data.status === "PROSES" && <button type="button" onClick={() => { setShowOptions(false); onEdit(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[#475569] hover:bg-[#F8FAFC]">Edit</button>}
-                    {onSend && data.status === "SELESAI" && <button type="button" onClick={() => { setShowOptions(false); onSend(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[#475569] hover:bg-[#F8FAFC]">Kirim ke</button>}
-                    {onDelete && <button type="button" onClick={() => { setShowOptions(false); onDelete(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50">Hapus</button>}
+                  <div onClick={(event) => event.stopPropagation()} className="absolute right-0 top-9 z-20 w-32 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)] py-1 text-left">
+                    {onEdit && data.status === "PROSES" && <button type="button" onClick={() => { setShowOptions(false); onEdit(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[var(--fg)] hover:bg-[var(--tint)]">Edit</button>}
+                    {onSend && data.status === "SELESAI" && <button type="button" onClick={() => { setShowOptions(false); onSend(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[var(--fg)] hover:bg-[var(--tint)]">Kirim ke</button>}
+                    {onDelete && <button type="button" onClick={() => { setShowOptions(false); onDelete(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[var(--danger)] hover:bg-[var(--tint)]">Hapus</button>}
                   </div>
                 )}
               </div>
@@ -97,7 +97,7 @@ export default function AsesmenCard({ data, basePath = "/guru/asesmen", submissi
                       event.stopPropagation();
                       onRemove(data);
                     }}
-                    className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-[#E2E8F0] text-lg leading-none text-[#94A3B8] transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                    className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-[var(--border)] text-lg leading-none text-[var(--muted)] transition hover:border-[var(--danger)] hover:bg-[var(--tint)] hover:text-[var(--danger)]"
                   >
                     ×
                   </button>

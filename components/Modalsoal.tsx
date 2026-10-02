@@ -153,12 +153,7 @@ export default function ModalSoal({ open, onClose, onSuccess, asesmenId, editing
               key={t}
               type="button"
               onClick={() => setTipe(t)}
-              className="cursor-pointer rounded-lg border py-2 text-xs font-semibold transition-colors"
-              style={
-                tipe === t
-                  ? { background: "#658864", borderColor: "#658864", color: "white" }
-                  : { borderColor: "#D1D5DB", color: "#374151" }
-              }
+              className={`cursor-pointer rounded-md border py-2 text-xs font-semibold transition-colors ${tipe === t ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--on-brand)]" : "border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--tint)]"}`}
             >
               {t === "PILIHAN_GANDA" ? "Pilihan Ganda" : t === "CHECKBOX" ? "Checkbox" : "Essay"}
             </button>
@@ -168,8 +163,8 @@ export default function ModalSoal({ open, onClose, onSuccess, asesmenId, editing
         <Textarea label="Pertanyaan" value={pertanyaan} onChange={(e) => setPertanyaan(e.target.value)} required />
 
         <div>
-          <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Kirim Foto (opsional)</label>
-          <label className="relative flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-dashed border-[#D1D5DB] text-[#9CA3AF] hover:border-[#658864]">
+          <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">Kirim Foto (opsional)</label>
+          <label className="relative flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--border-strong)] text-[var(--muted)] hover:border-[var(--brand)]">
             {uploading ? (
               <span className="text-[10px] font-medium">Upload...</span>
             ) : gambar ? (
@@ -190,7 +185,7 @@ export default function ModalSoal({ open, onClose, onSuccess, asesmenId, editing
 
         {tipe !== "ESSAY" && (
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-[#374151]">
+            <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">
               Opsi Jawaban ({tipe === "PILIHAN_GANDA" ? "pilih 1 jawaban benar" : "bisa pilih lebih dari 1"}) — kunci
               jawaban opsional, bisa ditandain belakangan
             </label>
@@ -203,10 +198,10 @@ export default function ModalSoal({ open, onClose, onSuccess, asesmenId, editing
                     className={`flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center border-2 transition-colors ${
                       tipe === "PILIHAN_GANDA" ? "rounded-full" : "rounded"
                     }`}
-                    style={{ borderColor: opsi.isBenar ? "#22C55E" : "#D1D5DB", background: opsi.isBenar ? "#22C55E" : "transparent" }}
+                    style={{ borderColor: opsi.isBenar ? "var(--brand)" : "var(--border-strong)", background: opsi.isBenar ? "var(--brand)" : "transparent" }}
                   >
                     {opsi.isBenar && (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="h-3 w-3">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="h-3 w-3 text-[var(--on-brand)]">
                         <path d="M5 13l4 4L19 7" />
                       </svg>
                     )}
@@ -215,10 +210,10 @@ export default function ModalSoal({ open, onClose, onSuccess, asesmenId, editing
                     value={opsi.teks}
                     onChange={(e) => handleOpsiTeksChange(i, e.target.value)}
                     placeholder={`Opsi ${i + 1}`}
-                    className="flex-1 rounded-lg border border-[#D1D5DB] px-3 py-2 text-sm outline-none focus:border-[#658864]"
+                    className="flex-1 rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--fg)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--brand)]"
                   />
                   {opsiList.length > 2 && (
-                    <button type="button" onClick={() => handleRemoveOpsi(i)} className="cursor-pointer text-[#9CA3AF] hover:text-red-500">
+                    <button type="button" onClick={() => handleRemoveOpsi(i)} className="cursor-pointer text-[var(--muted)] hover:text-[var(--danger)]">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                         <path d="M18 6 6 18M6 6l12 12" />
                       </svg>
@@ -227,13 +222,13 @@ export default function ModalSoal({ open, onClose, onSuccess, asesmenId, editing
                 </div>
               ))}
             </div>
-            <button type="button" onClick={handleAddOpsi} className="mt-2 cursor-pointer text-xs font-semibold text-[#658864] hover:underline">
+            <button type="button" onClick={handleAddOpsi} className="mt-2 cursor-pointer text-xs font-semibold text-[var(--link)] hover:underline">
               + Tambah Opsi
             </button>
           </div>
         )}
 
-        {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+        {error && <p className="text-xs font-medium text-[var(--danger)]">{error}</p>}
 
         <Button type="submit" loading={loading} className="w-full">
           {isEditing ? "Simpan Perubahan" : "Tambah Soal"}

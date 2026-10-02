@@ -185,9 +185,9 @@ export default function TabelNilai({ asesmenId, judulAsesmen, jenisAsesmen, mata
   }
 
   return (
-    <div className="rounded-2xl border border-black/5 bg-[#FAF6EE] p-5 shadow-sm">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-bold text-[#111827]">Nilai Siswa</p>
+        <p className="text-sm font-semibold text-[var(--fg)]">Nilai Siswa</p>
         <div className="flex gap-2">
           <Button size="sm" onClick={() => setShowExportModal(true)}>
             Generate Nilai
@@ -196,12 +196,12 @@ export default function TabelNilai({ asesmenId, judulAsesmen, jenisAsesmen, mata
       </div>
 
       {nilaiList.length === 0 ? (
-        <p className="mt-6 text-center text-xs text-[#9CA3AF]">Belum ada siswa yang mengumpulkan.</p>
+        <p className="mt-6 text-center text-xs text-[var(--muted)]">Belum ada siswa yang mengumpulkan.</p>
       ) : (
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[760px] text-left text-sm text-[var(--fg)]">
             <thead>
-              <tr className="border-b border-black/5 text-xs text-[#9CA3AF]">
+              <tr className="border-b border-[var(--border)] text-xs text-[var(--muted)]">
                 <th className="pb-2 font-semibold">Nama</th>
                 <th className="pb-2 font-semibold">NIS</th>
                 <th className="pb-2 font-semibold">Kelas/Jurusan</th>
@@ -216,12 +216,12 @@ export default function TabelNilai({ asesmenId, judulAsesmen, jenisAsesmen, mata
                 <tr
                   key={row.submissionId}
                   onClick={() => router.push(`${basePath}/${asesmenId}/jawaban/${row.submissionId}`)}
-                  className="cursor-pointer border-b border-black/5 transition-colors hover:bg-[#F8FAFC] last:border-0"
+                  className="cursor-pointer border-b border-[var(--border)] transition-colors hover:bg-[var(--tint)] last:border-0"
                 >
-                  <td className="py-2.5 font-medium text-[#111827]">{row.nama}</td>
-                  <td className="py-2.5 text-xs text-[#6B7280]">{row.nis}</td>
-                  <td className="py-2.5 text-xs text-[#6B7280]">{row.kelasReferensi}</td>
-                  <td className="py-2.5 text-xs text-[#6B7280]">{row.totalSoalTerjawab}</td>
+                  <td className="py-2.5 font-medium text-[var(--fg)]">{row.nama}</td>
+                  <td className="py-2.5 text-xs text-[var(--muted)]">{row.nis}</td>
+                  <td className="py-2.5 text-xs text-[var(--muted)]">{row.kelasReferensi}</td>
+                  <td className="py-2.5 text-xs text-[var(--muted)]">{row.totalSoalTerjawab}</td>
                   <td className="py-2.5 text-right">
                     <Badge tone={row.nilaiObjektif >= 75 ? "green" : row.nilaiObjektif >= 50 ? "amber" : "red"}>
                       {row.nilaiObjektif}
@@ -255,7 +255,7 @@ export default function TabelNilai({ asesmenId, judulAsesmen, jenisAsesmen, mata
                     >
                       Reset Nilai
                     </Button>}
-                    {readOnly && <span className="text-xs font-semibold text-[#658864]">Lihat jawaban</span>}
+                    {readOnly && <span className="text-xs font-semibold text-[var(--link)]">Lihat jawaban</span>}
                   </td>
                 </tr>
               ))}
@@ -271,7 +271,7 @@ export default function TabelNilai({ asesmenId, judulAsesmen, jenisAsesmen, mata
         maxWidth="max-w-md"
       >
         <div className="space-y-3">
-          <p className="text-sm text-[#475569]">Pilih format untuk {kelasNama}.</p>
+          <p className="text-sm text-[var(--muted)]">Pilih format untuk {kelasNama}.</p>
           <Button className="w-full" loading={downloading} onClick={() => { setShowExportModal(false); void handleDownload(); }}>
             Unduh Excel (.xlsx)
           </Button>
@@ -287,11 +287,11 @@ export default function TabelNilai({ asesmenId, judulAsesmen, jenisAsesmen, mata
         title={resetRequest?.type === "asesmen" ? "Reset Asesmen Siswa" : "Reset Nilai Siswa"}
       >
         {resetRequest?.type === "asesmen" ? (
-          <p className="text-sm leading-6 text-[#475569]">
+          <p className="text-sm leading-6 text-[var(--muted)]">
             Semua jawaban <strong>{resetRequest.nama}</strong> akan dihapus dan siswa dapat mengerjakan asesmen ini dari awal.
           </p>
         ) : (
-          <p className="text-sm leading-6 text-[#475569]">
+          <p className="text-sm leading-6 text-[var(--muted)]">
             Nilai akhir <strong>{resetRequest?.nama}</strong> akan dikosongkan. Jawaban siswa tetap tersimpan.
           </p>
         )}

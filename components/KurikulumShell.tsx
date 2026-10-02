@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import Button from "@/components/ui/Button";
+import { Avatar, Btn as Button, STYLES, ThemeToggle } from "@/app/guru/_ui";
 
-const BRAND = "#658864";
 type KurikulumTab = "DASHBOARD" | "KELAS" | "SISWA" | "GURU" | "ASESMEN" | "PERFORMA";
 
 const TABS: { key: KurikulumTab; label: string; href: string }[] = [
@@ -32,8 +30,8 @@ function TabIcon({ tab }: { tab: KurikulumTab }) {
 
 export default function KurikulumShell({ children, activeTab = "KELAS" }: { children: React.ReactNode; activeTab?: KurikulumTab }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [me, setMe] = useState<{ nama: string; fotoProfil: string | null } | null>(null);
 
   useEffect(() => {
@@ -47,37 +45,41 @@ export default function KurikulumShell({ children, activeTab = "KELAS" }: { chil
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FAF6EE]" style={{ fontFamily: "Inter, sans-serif" }}>
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-[#FAF6EE]">
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6">
+    <div className="lp flex min-h-screen flex-col bg-[var(--bg)] text-[var(--fg)]" style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
+      <style>{STYLES}</style>
+      <header className="sticky top-0 z-40 h-14 border-b border-[var(--border)] bg-[var(--bg)]">
+        <div className="flex h-full items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen((value) => !value)} aria-label="Toggle sidebar" className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-black/5">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <button type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Buka menu Kurikulum" aria-expanded={sidebarOpen} className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md hover:bg-[var(--tint)] lg:hidden">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" className="h-5 w-5"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
-            <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Studify</span>
+            <button type="button" onClick={() => setSidebarCollapsed((value) => !value)} aria-label={sidebarCollapsed ? "Perluas menu" : "Ciutkan menu"} aria-expanded={!sidebarCollapsed} className="hidden h-9 w-9 cursor-pointer items-center justify-center rounded-md text-[var(--muted)] hover:bg-[var(--tint)] hover:text-[var(--fg)] lg:flex">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`}><path d="m14 18-6-6 6-6M20 4v16" /></svg>
+            </button>
+            <span className="text-base font-semibold tracking-tight">Studify</span>
           </div>
           <div className="flex items-center gap-3">
-            {me && <div className="hidden text-right sm:block"><p className="text-sm font-semibold text-[#111827]">{me.nama}</p><p className="text-xs text-[#9CA3AF]">KURIKULUM</p></div>}
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#E5E7EB] text-xs font-bold text-[#6B7280]">{me?.fotoProfil ? <img src={me.fotoProfil} alt={me.nama} className="h-full w-full object-cover" /> : me?.nama?.charAt(0) ?? "K"}</div>
+            {me && <div className="hidden text-right sm:block"><p className="text-sm font-medium">{me.nama}</p><p className="text-xs text-[var(--muted)]">KURIKULUM</p></div>}
+            <div className="hidden sm:block"><Avatar src={me?.fotoProfil} nama={me?.nama ?? "Kurikulum"} /></div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
-        {sidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" />}
-        <aside aria-label="Navigasi kurikulum" className={`fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto bg-[#FAF6EE] p-4 shadow-[8px_0_24px_rgba(15,23,42,0.12)] transition-transform duration-300 ease-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-          <div className="flex min-h-full flex-col border-r border-black/5 bg-[#FAF6EE] p-4 shadow-sm">
-            <p className="mb-3 px-2 pt-2 text-sm font-bold text-[#111827]">Dashboard Kurikulum<br /><span style={{ color: BRAND }}>- {TABS.find((tab) => tab.key === activeTab)?.label}</span></p>
-            <nav className="flex flex-col gap-1">{TABS.map((tab) => <Link key={tab.key} href={tab.href} onClick={() => setSidebarOpen(false)} className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors" style={activeTab === tab.key ? { background: `${BRAND}1A`, color: BRAND } : { color: "#374151" }}><TabIcon tab={tab.key} /><span>{tab.label}</span></Link>)}</nav>
-            <Button size="md" onClick={handleLogout} className="mt-auto w-full rounded-xl" style={{ background: "#F8CDBD", color: "#7C4A3A" }}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M10 17l5-5-5-5M15 12H3M21 4v16" strokeLinecap="round" strokeLinejoin="round" /></svg>Keluar</Button>
-          </div>
+      <div className="flex flex-1">
+        {sidebarOpen && <div onClick={() => setSidebarOpen(false)} aria-hidden="true" className="fixed inset-x-0 bottom-0 top-14 z-40 bg-[var(--fg)]/30 lg:hidden" />}
+        <aside aria-label="Navigasi kurikulum" className={`fixed bottom-0 left-0 top-14 z-50 flex w-64 shrink-0 flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--bg)] p-3 transition-[width,transform] duration-150 ease-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:sticky lg:top-14 lg:z-10 lg:h-[calc(100vh-3.5rem)] lg:translate-x-0 ${sidebarCollapsed ? "lg:w-20" : "lg:w-64"}`}>
+          <p className={`mb-2 px-3 pt-2 text-xs font-medium text-[var(--muted)] ${sidebarCollapsed ? "lg:sr-only" : ""}`}>Dashboard Kurikulum</p>
+          <nav className="flex flex-col gap-1">
+            {TABS.map((tab) => <Link key={tab.key} href={tab.href} onClick={() => setSidebarOpen(false)} aria-current={activeTab === tab.key ? "page" : undefined} title={tab.label} className={`flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${sidebarCollapsed ? "lg:justify-center lg:px-0" : ""} ${activeTab === tab.key ? "bg-[var(--brand)] text-[var(--on-brand)]" : "text-[var(--muted)] hover:bg-[var(--tint)] hover:text-[var(--fg)]"}`}><TabIcon tab={tab.key} /><span className={sidebarCollapsed ? "lg:sr-only" : ""}>{tab.label}</span></Link>)}
+          </nav>
+          <Button size="md" variant="outline" onClick={handleLogout} title="Keluar" className={`mt-auto w-full ${sidebarCollapsed ? "lg:px-0" : ""}`}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M10 17l5-5-5-5M15 12H3M21 4v16" /></svg><span className={sidebarCollapsed ? "lg:sr-only" : ""}>Keluar</span></Button>
         </aside>
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:py-6"><div className="mx-auto max-w-6xl">{children}</div></main>
       </div>
 
-      <footer className="py-10 text-center text-white" style={{ background: BRAND }}>
-        <p className="text-lg font-bold">Studify</p>
-        <p className="mt-8 border-t border-white/20 pt-6 text-xs text-white/80">© 2026 Studify. All Rights Reserved.</p>
+      <footer className="mt-auto border-t border-[var(--border)]">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between sm:px-6"><span className="font-medium text-[var(--fg)]">Studify</span><span>© 2026 Studify. All Rights Reserved.</span></div>
       </footer>
     </div>
   );

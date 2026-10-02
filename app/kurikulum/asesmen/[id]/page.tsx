@@ -7,8 +7,6 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import KurikulumShell from "@/components/KurikulumShell";
 
-const BRAND = "#658864";
-
 interface OpsiJawaban {
   id: string;
   teks: string;
@@ -77,29 +75,29 @@ export default function KurikulumAsesmenDetailPage() {
   const halamanCount = soalTerfilter.length;
   const currentSoal = soalTerfilter[activeIndex] ?? null;
 
-  if (loading) return <KurikulumShell><p className="mx-auto max-w-7xl px-4 text-sm text-[#9CA3AF] sm:px-6">Memuat...</p></KurikulumShell>;
+  if (loading) return <KurikulumShell activeTab="ASESMEN"><p role="status" className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--muted)]">Memuat asesmen...</p></KurikulumShell>;
   if (error || !asesmen) {
     return (
-      <KurikulumShell><div className="flex flex-col items-center gap-3 py-10"><p className="text-sm text-[#9CA3AF]">{error || "Asesmen tidak ditemukan."}</p><Button variant="outline" onClick={() => router.push("/kurikulum")}>Kembali</Button></div></KurikulumShell>
+      <KurikulumShell activeTab="ASESMEN"><div role="alert" className="flex flex-col items-start gap-3 rounded-md border border-[var(--border)] bg-[var(--surface)] p-4"><p className="text-sm text-[var(--fg)]">{error || "Asesmen tidak ditemukan."}</p><Button variant="outline" onClick={() => router.push("/kurikulum")}>Kembali</Button></div></KurikulumShell>
     );
   }
 
   return (
     <KurikulumShell activeTab="ASESMEN"><div className="mx-auto w-full max-w-7xl px-4 pb-10 sm:px-6">
-      <Link href="/kurikulum" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#64748B] hover:text-[#658864]">
+      <Link href="/kurikulum" className="mb-3 inline-flex min-h-10 items-center gap-1 text-sm font-medium text-[var(--link)] hover:underline">
         &larr; Kembali ke Kurikulum
       </Link>
 
-      <div className="flex flex-wrap items-start justify-between gap-5 rounded-xl border border-black/5 border-t-4 border-t-[#658864] bg-[#FAF6EE] p-6 shadow-[0_2px_8px_rgba(15,23,42,0.08)]">
+      <div className="flex flex-wrap items-start justify-between gap-5 border-b border-[var(--border)] pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">{asesmen.judul}</h1>
+          <h1 className="break-words text-xl font-semibold text-[var(--fg)]">{asesmen.judul}</h1>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <Badge tone="brand">{asesmen.tipe === "KUIS" ? "Kuis" : "Ujian Online"}</Badge>
             {asesmen.mapel && <Badge tone="gray">{asesmen.mapel.nama}</Badge>}
             <Badge tone={asesmen.status === "SELESAI" ? "green" : "amber"}>{asesmen.status === "SELESAI" ? "Selesai" : "Proses"}</Badge>
           </div>
-          <p className="mt-2 text-sm text-[#64748B]">Dibuat oleh {asesmen.guru.nama}</p>
-          {asesmen.deskripsi && <p className="mt-1 text-sm text-[#475569]">{asesmen.deskripsi}</p>}
+          <p className="mt-2 text-sm text-[var(--muted)]">Dibuat oleh {asesmen.guru.nama}</p>
+          {asesmen.deskripsi && <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--fg)]">{asesmen.deskripsi}</p>}
           {asesmen.kelasTujuan.length > 0 && (
             <div className="mt-3 flex flex-wrap items-center gap-1.5">
               {asesmen.kelasTujuan.map(({ kelas }) => (
@@ -112,15 +110,15 @@ export default function KurikulumAsesmenDetailPage() {
         </div>
 
         <div className="text-right">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[#94A3B8]">Durasi pengerjaan</p>
-          <p className="mt-1 text-sm font-bold text-[#111827]">{asesmen.durasiMenit ? `${asesmen.durasiMenit} menit` : "Belum diatur"}</p>
+          <p className="text-xs font-medium text-[var(--muted)]">Durasi pengerjaan</p>
+          <p className="mt-1 text-sm font-semibold text-[var(--fg)]">{asesmen.durasiMenit ? `${asesmen.durasiMenit} menit` : "Belum diatur"}</p>
         </div>
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <Link
           href={`/kurikulum/asesmen/${asesmenId}/jawaban`}
-          className="inline-flex items-center justify-center rounded-lg border border-[#CBD5E1] bg-[#FAF6EE] px-3 py-1.5 text-xs font-semibold text-[#475569] transition-colors hover:border-[#658864] hover:text-[#658864]"
+          className="inline-flex min-h-10 items-center justify-center rounded-md border border-[var(--border-strong)] px-3 py-2 text-sm font-medium text-[var(--fg)] transition-colors hover:bg-[var(--tint)]"
         >
           Jawaban
         </Link>
@@ -131,31 +129,31 @@ export default function KurikulumAsesmenDetailPage() {
             setActiveIndex(0);
           }}
           placeholder="Cari soal..."
-          className="min-w-[180px] flex-1 rounded-lg border border-[#CBD5E1] bg-[#FAF6EE] px-4 py-2 text-sm outline-none placeholder:text-[#94A3B8] focus:border-[#658864] focus:ring-2 focus:ring-[#658864]/10"
+          className="min-w-[180px] flex-1 rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--fg)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--brand)]"
         />
         <div className="flex items-center gap-1">
           <button
             aria-label="Soal sebelumnya"
             onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
             disabled={activeIndex === 0}
-            className="cursor-pointer rounded-lg border border-[#CBD5E1] bg-[#FAF6EE] px-3 py-2 text-xs font-semibold text-[#475569] disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-10 min-w-10 cursor-pointer rounded-md border border-[var(--border-strong)] text-sm font-medium text-[var(--fg)] hover:bg-[var(--tint)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {"<<"}
           </button>
-          <span className="min-w-12 px-2 text-center text-xs font-bold text-[#475569]">
+          <span className="min-w-12 px-2 text-center text-xs font-medium tabular-nums text-[var(--muted)]">
             {halamanCount === 0 ? "0/0" : `${activeIndex + 1}/${halamanCount}`}
           </span>
           <button
             aria-label="Soal berikutnya"
             onClick={() => setActiveIndex((i) => Math.min(halamanCount - 1, i + 1))}
             disabled={activeIndex >= halamanCount - 1}
-            className="cursor-pointer rounded-lg border border-[#CBD5E1] bg-[#FAF6EE] px-3 py-2 text-xs font-semibold text-[#475569] disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-10 min-w-10 cursor-pointer rounded-md border border-[var(--border-strong)] text-sm font-medium text-[var(--fg)] hover:bg-[var(--tint)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {">>"}
           </button>
           <button
             onClick={() => setShowGrid((v) => !v)}
-            className="cursor-pointer rounded-lg border border-[#CBD5E1] bg-[#FAF6EE] p-2 text-[#475569]"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-[var(--border-strong)] text-[var(--fg)] hover:bg-[var(--tint)]"
             title="Buka Library Soal"
             aria-label="Buka Library Soal"
           >
@@ -170,10 +168,10 @@ export default function KurikulumAsesmenDetailPage() {
       </div>
 
       {showGrid && (
-        <div className="mt-3 rounded-xl border border-black/5 bg-[#FAF6EE] p-3 shadow-sm">
-          <p className="mb-2 text-xs font-semibold text-[#64748B]">Library Soal</p>
+        <div className="mt-3 rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
+          <p className="mb-2 text-xs font-semibold text-[var(--fg)]">Library Soal</p>
           {halamanCount === 0 ? (
-            <p className="text-xs text-[#94A3B8]">{search ? "Tidak ada soal yang cocok." : "Belum ada soal."}</p>
+            <p className="text-xs text-[var(--muted)]">{search ? "Tidak ada soal yang cocok." : "Belum ada soal."}</p>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
               {soalTerfilter.map((soal, i) => (
@@ -183,8 +181,7 @@ export default function KurikulumAsesmenDetailPage() {
                     setActiveIndex(i);
                     setShowGrid(false);
                   }}
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-xs font-semibold"
-                  style={i === activeIndex ? { background: BRAND, color: "white" } : { background: "#F3F4F6", color: "#374151" }}
+                  className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border text-xs font-semibold ${i === activeIndex ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--on-brand)]" : "border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:bg-[var(--tint)]"}`}
                 >
                   {i + 1}
                 </button>
@@ -194,11 +191,11 @@ export default function KurikulumAsesmenDetailPage() {
         </div>
       )}
 
-      <div className="mt-4 min-h-[360px] rounded-xl border border-black/5 bg-[#FAF6EE] p-6 shadow-[0_2px_8px_rgba(15,23,42,0.08)] sm:p-10">
+      <div className="mt-4 min-h-[360px] rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6">
         {asesmen.soal.length === 0 ? (
-          <p className="text-sm text-[#9CA3AF]">Belum ada soal.</p>
+          <p className="text-sm text-[var(--muted)]">Belum ada soal.</p>
         ) : halamanCount === 0 ? (
-          <p className="text-sm text-[#9CA3AF]">Tidak ada soal yang cocok dengan pencarian.</p>
+          <p className="text-sm text-[var(--muted)]">Tidak ada soal yang cocok dengan pencarian.</p>
         ) : currentSoal ? (
           <div>
             <div className="flex items-start justify-between gap-2">
@@ -207,13 +204,13 @@ export default function KurikulumAsesmenDetailPage() {
               </Badge>
             </div>
 
-            <p className="mt-5 text-base font-semibold leading-relaxed text-[#111827]">
+            <p className="mt-5 text-base font-semibold leading-relaxed text-[var(--fg)]">
               {activeIndex + 1}. {currentSoal.pertanyaan}
             </p>
 
             {currentSoal.gambar && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={currentSoal.gambar} alt="Gambar soal" className="mt-3 max-h-64 rounded-xl object-contain" />
+              <img src={currentSoal.gambar} alt="Gambar soal" className="mt-3 max-h-64 rounded-md object-contain" />
             )}
 
             {currentSoal.tipe !== "ESSAY" ? (
@@ -221,27 +218,27 @@ export default function KurikulumAsesmenDetailPage() {
                 {currentSoal.opsi.map((o) => (
                   <div
                     key={o.id}
-                    className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${
-                      o.isBenar ? "border-[#658864] bg-[#658864]/5" : "border-[#E2E8F0]"
+                    className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 text-sm ${
+                      o.isBenar ? "border-[var(--brand)] bg-[var(--tint)]" : "border-[var(--border)]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <input type={currentSoal.tipe === "PILIHAN_GANDA" ? "radio" : "checkbox"} checked={o.isBenar} readOnly disabled />
-                      <span className="text-[#374151]">{o.teks}</span>
+                      <span className="text-[var(--fg)]">{o.teks}</span>
                     </div>
                     {o.isBenar && <Badge tone="green">Kunci Jawaban</Badge>}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="mt-3 text-xs text-[#9CA3AF]">Soal Essay — dinilai manual oleh guru setelah siswa mengumpulkan.</p>
+              <p className="mt-3 text-xs text-[var(--muted)]">Soal Essay — dinilai manual oleh guru setelah siswa mengumpulkan.</p>
             )}
           </div>
         ) : null}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-[#9CA3AF]">Tampilan read-only untuk monitoring Kurikulum.</p>
+        <p className="text-xs text-[var(--muted)]">Tampilan read-only untuk monitoring Kurikulum.</p>
         <Badge tone={asesmen.status === "SELESAI" ? "green" : "amber"}>
           {asesmen.status === "SELESAI" ? "Sudah dipublikasikan ke kelas" : "Belum dipublikasikan"}
         </Badge>
