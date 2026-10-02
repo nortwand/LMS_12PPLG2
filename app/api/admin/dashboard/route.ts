@@ -63,8 +63,8 @@ export async function GET() {
       }),
     ]);
 
-    const kuis = asesmenPerTipe.find((item) => item.tipe === "KUIS")?._count._all ?? 0;
-    const ujian = asesmenPerTipe.find((item) => item.tipe === "UJIAN")?._count._all ?? 0;
+    const kuis = asesmenPerTipe.find((item: { tipe: "KUIS" | "UJIAN"; _count: { _all: number } }) => item.tipe === "KUIS")?._count._all ?? 0;
+    const ujian = asesmenPerTipe.find((item: { tipe: "KUIS" | "UJIAN"; _count: { _all: number } }) => item.tipe === "UJIAN")?._count._all ?? 0;
     const dailyActivity = new Map<string, { tanggal: string; asesmen: number; tugas: number; submission: number; userIds: Set<string> }>();
     for (let index = 0; index < 14; index += 1) {
       const date = new Date(activityStart);
