@@ -1,17 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { createDatabaseAdapter } from "../lib/db-config";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 
-const adapter = new PrismaMariaDb({
-  host: process.env.DB_HOST ?? "127.0.0.1",
-  port: Number(process.env.DB_PORT ?? 3306),
-  user: process.env.DB_USER ?? "root",
-  password: process.env.DB_PASSWORD ?? "",
-  database: process.env.DB_NAME ?? "Studify",
-});
-
-const db = new PrismaClient({ adapter });
+const { adapter } = createDatabaseAdapter();
+const db = new PrismaClient({ adapter, log: ["error"] });
 
 // ===== JURUSAN =====
 const jurusanList = ["DKV", "TJKT", "PPLG", "PEMASARAN", "MPLB"];

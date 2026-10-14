@@ -1,24 +1,38 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { createDatabaseAdapter } from "@/lib/db-config";
 
-// driver adapter butuh config koneksi manual, bukan DATABASE_URL langsung
-const adapter = new PrismaMariaDb({
-  host: process.env.DB_HOST ?? "127.0.0.1",
-  port: Number(process.env.DB_PORT ?? 3306),
-  user: process.env.DB_USER ?? "root",
-  password: process.env.DB_PASSWORD ?? "",
-  database: process.env.DB_NAME ?? "Studify",
-  connectionLimit: 5,
-});
+const databaseConfig = createDatabaseAdapter();
 
 // biar gak bikin instance baru tiap hot-reload pas dev
 const globalForPrisma = global as unknown as { prisma?: PrismaClient };
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+function createPrismaClient() {
+  const client =
+    process.env.NODE_ENV === "development"
+      ? new PrismaClient({
+          adapter: databaseConfig.adapter,
+          log: [
+            { emit: "event", level: "error" },
+            { emit: "stdout", level: "warn" },
+          ],
+        })
+      : new PrismaClient({
+          adapter: databaseConfig.adapter,
+          log: [{ emit: "event", level: "error" }],
+        });
+
+  client.$on("error", (event) => {
+    console.error("[db] Prisma error", {
+      message: event.message,
+      host: databaseConfig.host,
+      database: databaseConfig.database,
+      sslEnabled: databaseConfig.sslEnabled,
+    });
   });
+
+  return client;
+}
+
+export const db = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;

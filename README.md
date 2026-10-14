@@ -87,11 +87,17 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=Studify
+DB_SSL=false
+DB_SSL_CA=
 JWT_SECRET=ganti-dengan-secret-random
 RESEND_API_KEY=
 ```
 
 Jangan commit `.env`, `account.txt`, password, API key, atau file upload pengguna.
+
+Untuk TiDB Cloud, atur `DB_HOST`, `DB_PORT=4000`, `DB_USER`, `DB_PASSWORD`, dan `DB_NAME` pada environment deployment. Gunakan nama schema persis seperti yang tampil di TiDB (screenshot setup menunjukkan `studify`, huruf kecil). Set `DB_SSL=true` dan isi `DB_SSL_CA` dengan seluruh sertifikat CA PEM (termasuk baris `BEGIN CERTIFICATE` dan `END CERTIFICATE`). Nilai CA boleh berupa multiline atau teks dengan `\n`; koneksi akan memverifikasi sertifikat server. Untuk MySQL/MariaDB lokal tanpa TLS, biarkan `DB_SSL=false` dan `DB_SSL_CA` kosong. Runtime Studify menggunakan variabel `DB_*`; `DATABASE_URL` tidak digunakan oleh adapter koneksi ini.
+
+Error koneksi Prisma dan MariaDB dicatat ke log deployment. Log diagnostik hanya menyertakan pesan error, host, nama database, dan status SSL—jangan pernah menambahkan password atau isi sertifikat ke log.
 
 ## Database
 
