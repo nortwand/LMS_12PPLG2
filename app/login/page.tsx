@@ -48,7 +48,7 @@ const PORTAL_CONFIG: Record<
   Portal,
   { label: string; title: string; identifierLabel: string; identifierPlaceholder: string }
 > = {
-  ADMIN: { label: "Admin", title: "Login Sebagai Admin", identifierLabel: "Email", identifierPlaceholder: "Email" },
+  ADMIN: { label: "Admin / Super Admin", title: "Login Sebagai Admin", identifierLabel: "Email", identifierPlaceholder: "Email" },
   PETUGAS: { label: "Petugas", title: "Login Sebagai Petugas", identifierLabel: "NIK", identifierPlaceholder: "NIK" },
   SISWA: { label: "Siswa", title: "Login Sebagai Siswa", identifierLabel: "NIS", identifierPlaceholder: "NIS" },
 };

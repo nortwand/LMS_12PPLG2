@@ -26,6 +26,7 @@ interface AsesmenCardProps {
   submissionStatus?: "BELUM" | "SEDANG" | "SUDAH"; // khusus tampilan siswa
   onEdit?: (data: AsesmenData) => void;
   onSend?: (data: AsesmenData) => void;
+  allowSendWhenInProgress?: boolean;
   onDelete?: (data: AsesmenData) => void;
   onRemove?: (data: AsesmenData) => void;
 }
@@ -35,7 +36,7 @@ const tipeConfig: Record<AsesmenData["tipe"], { label: string }> = {
   UJIAN: { label: "Ujian Online" },
 };
 
-export default function AsesmenCard({ data, basePath = "/guru/asesmen", submissionStatus, onEdit, onSend, onDelete, onRemove }: AsesmenCardProps) {
+export default function AsesmenCard({ data, basePath = "/guru/asesmen", submissionStatus, onEdit, onSend, allowSendWhenInProgress = false, onDelete, onRemove }: AsesmenCardProps) {
   const router = useRouter();
   const [showOptions, setShowOptions] = useState(false);
   const tc = tipeConfig[data.tipe];
@@ -77,7 +78,7 @@ export default function AsesmenCard({ data, basePath = "/guru/asesmen", submissi
                 {showOptions && (
                   <div onClick={(event) => event.stopPropagation()} className="absolute right-0 top-9 z-20 w-32 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)] py-1 text-left">
                     {onEdit && data.status === "PROSES" && <button type="button" onClick={() => { setShowOptions(false); onEdit(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[var(--fg)] hover:bg-[var(--tint)]">Edit</button>}
-                    {onSend && data.status === "SELESAI" && <button type="button" onClick={() => { setShowOptions(false); onSend(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[var(--fg)] hover:bg-[var(--tint)]">Kirim ke</button>}
+                    {onSend && (data.status === "SELESAI" || allowSendWhenInProgress) && <button type="button" onClick={() => { setShowOptions(false); onSend(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[var(--fg)] hover:bg-[var(--tint)]">Kirim ke</button>}
                     {onDelete && <button type="button" onClick={() => { setShowOptions(false); onDelete(data); }} className="block w-full cursor-pointer px-3 py-2 text-xs font-medium text-[var(--danger)] hover:bg-[var(--tint)]">Hapus</button>}
                   </div>
                 )}

@@ -55,8 +55,8 @@ export async function GET(req: NextRequest, { params }: Params) {
       }
 
       // lazy-create submission + urutan soal acak pas pertama kali siswa buka
-      let submission = await db.submission.findUnique({
-        where: { asesmenId_siswaId: { asesmenId: id, siswaId: session!.userId } },
+      let submission = await db.submission.findFirst({
+        where: { asesmenId: id, siswaId: session!.userId, isSuperAdmin: false },
         include: { jawaban: { include: { opsiDipilih: true } } },
       });
 
@@ -104,6 +104,61 @@ export async function GET(req: NextRequest, { params }: Params) {
       });
     }
 
+    if (session!.role === "SUPER_ADMIN" && req.nextUrl.searchParams.get("mode") === "kerjakan") {
+      let submission = await db.submission.findUnique({
+        where: { asesmenId_siswaId: { asesmenId: id, siswaId: session!.userId } },
+        include: { jawaban: { include: { opsiDipilih: true } } },
+      });
+
+      if (asesmen.status !== "SELESAI") {
+        return NextResponse.json({ error: "Asesmen belum tersedia untuk dikerjakan." }, { status: 403 });
+      }
+
+      if (!submission) {
+        const pilihanIds = asesmen.soal.filter((soal) => soal.tipe !== "ESSAY").map((soal) => soal.id);
+        const essayIds = asesmen.soal.filter((soal) => soal.tipe === "ESSAY").map((soal) => soal.id);
+        submission = await db.submission.create({
+          data: {
+            asesmenId: id,
+            siswaId: session!.userId,
+            isSuperAdmin: true,
+            soalOrder: JSON.stringify([...shuffle(pilihanIds), ...shuffle(essayIds)]),
+          },
+          include: { jawaban: { include: { opsiDipilih: true } } },
+        });
+      } else if (!submission.isSuperAdmin) {
+        return NextResponse.json({ error: "Submission akun tidak valid." }, { status: 409 });
+      }
+
+      const storedOrder: string[] = submission.soalOrder
+        ? JSON.parse(submission.soalOrder)
+        : asesmen.soal.map((soal) => soal.id);
+      const soalMap = new Map(asesmen.soal.map((soal) => [soal.id, soal]));
+      const order = [
+        ...storedOrder.filter((soalId) => soalMap.get(soalId)?.tipe !== "ESSAY"),
+        ...storedOrder.filter((soalId) => soalMap.get(soalId)?.tipe === "ESSAY"),
+      ];
+      const soalAcak = order.map((soalId) => soalMap.get(soalId)).filter(Boolean) as typeof asesmen.soal;
+      soalAcak.forEach((soal) => soal.opsi.forEach((opsi) => delete (opsi as { isBenar?: boolean }).isBenar));
+
+      return NextResponse.json({
+        data: {
+          ...asesmen,
+          soal: soalAcak,
+          submissionId: submission.id,
+          submissionStatus: submission.status,
+          tabSwitchCount: submission.tabSwitchCount,
+          mulaiPada: submission.mulaiPada,
+          jawabanTersimpan: submission.jawaban.map((jawaban) => ({
+            soalId: jawaban.soalId,
+            opsiIds: jawaban.opsiDipilih.map((opsi) => opsi.opsiJawabanId),
+            jawabanEssay: jawaban.jawabanEssay,
+            raguRagu: jawaban.raguRagu,
+          })),
+        },
+      });
+    }
+
     return NextResponse.json({ data: asesmen });
   } catch (err: any) {
     const status = err.name === "UnauthorizedError" ? 401 : err.name === "ForbiddenError" ? 403 : 500;
@@ -115,7 +170,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const session = await getSession();
-    requireRole(session, ["GURU"]);
+    requireRole(session, ["GURU", "SUPER_ADMIN"]);
 
     const { id } = await params;
     const body = await req.json();
@@ -123,7 +178,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const existing = await db.asesmen.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: "Asesmen tidak ditemukan." }, { status: 404 });
-    if (existing.guruId !== session!.userId) {
+    if (session!.role !== "SUPER_ADMIN" && existing.guruId !== session!.userId) {
       return NextResponse.json({ error: "Bukan asesmen milik anda." }, { status: 403 });
     }
 
@@ -160,12 +215,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     const session = await getSession();
-    requireRole(session, ["GURU"]);
+    requireRole(session, ["GURU", "SUPER_ADMIN"]);
 
     const { id } = await params;
     const existing = await db.asesmen.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: "Asesmen tidak ditemukan." }, { status: 404 });
-    if (existing.guruId !== session!.userId) {
+    if (session!.role !== "SUPER_ADMIN" && existing.guruId !== session!.userId) {
       return NextResponse.json({ error: "Bukan asesmen milik anda." }, { status: 403 });
     }
 

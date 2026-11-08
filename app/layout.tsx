@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Script from "next/script";
+import DialogHost from "@/components/ui/DialogHost";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +17,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {`try{var s=localStorage.getItem("theme");var d=s==="dark"||(s===null&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d)}catch(e){}`}
         </Script>
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <DialogHost />
+      </body>
     </html>
   );
 }

@@ -12,7 +12,7 @@ type Params = { params: Promise<{ id: string }> };
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const session = await getSession();
-    requireRole(session, ["SISWA"]);
+    requireRole(session, ["SISWA", "SUPER_ADMIN"]);
 
     const { id: tugasId } = await params;
     const body = await req.json();
@@ -29,18 +29,33 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (!tugas) return NextResponse.json({ error: "Tugas tidak ditemukan." }, { status: 404 });
 
     const kelasIdTujuan = tugas.kelasTujuan.map((tk) => tk.kelasId);
-    const isAnggota = await db.kelasSiswa.findFirst({
+    const isAnggota = session!.role === "SUPER_ADMIN" || await db.kelasSiswa.findFirst({
       where: { siswaId: session!.userId, kelasId: { in: kelasIdTujuan } },
     });
     if (!isAnggota) {
       return NextResponse.json({ error: "Anda tidak memiliki akses ke tugas ini." }, { status: 403 });
     }
 
+    const isSuperAdmin = session!.role === "SUPER_ADMIN";
+    const existingSubmission = await db.tugasSubmission.findUnique({
+      where: { tugasId_siswaId: { tugasId, siswaId: session!.userId } },
+      select: { isSuperAdmin: true },
+    });
+    if (existingSubmission && existingSubmission.isSuperAdmin !== isSuperAdmin) {
+      return NextResponse.json({ error: "Jenis submission akun tidak sesuai." }, { status: 409 });
+    }
+
     const submission = await db.$transaction(async (tx) => {
       const sub = await tx.tugasSubmission.upsert({
         where: { tugasId_siswaId: { tugasId, siswaId: session!.userId } },
-        update: { status: "SUDAH", submittedAt: new Date() },
-        create: { tugasId, siswaId: session!.userId, status: "SUDAH", submittedAt: new Date() },
+        update: { status: "SUDAH", submittedAt: new Date(), isSuperAdmin },
+        create: {
+          tugasId,
+          siswaId: session!.userId,
+          status: "SUDAH",
+          submittedAt: new Date(),
+          isSuperAdmin,
+        },
       });
 
       // replace semua lampiran lama (buat skenario edit/re-submit)
@@ -70,7 +85,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     const session = await getSession();
-    requireRole(session, ["SISWA", "GURU"]);
+    requireRole(session, ["SISWA", "GURU", "SUPER_ADMIN"]);
 
     const { id: tugasId } = await params;
     const submissionId = req.nextUrl.searchParams.get("submissionId");
@@ -80,11 +95,20 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Bukan tugas milik anda." }, { status: 403 });
     }
     const submission = session!.role === "GURU"
-      ? submissionId ? await db.tugasSubmission.findFirst({ where: { id: submissionId, tugasId }, select: { id: true } }) : null
-      : await db.tugasSubmission.findUnique({ where: { tugasId_siswaId: { tugasId, siswaId: session!.userId } }, select: { id: true } });
+      ? submissionId ? await db.tugasSubmission.findFirst({ where: { id: submissionId, tugasId, isSuperAdmin: false }, select: { id: true, isSuperAdmin: true } }) : null
+      : await db.tugasSubmission.findUnique({
+          where: { tugasId_siswaId: { tugasId, siswaId: session!.userId } },
+          select: { id: true, isSuperAdmin: true },
+        });
 
     if (!submission) {
       return NextResponse.json({ error: "Jawaban belum dikumpulkan." }, { status: 404 });
+    }
+    if (session!.role === "SISWA" && submission.isSuperAdmin) {
+      return NextResponse.json({ error: "Submission tidak ditemukan." }, { status: 404 });
+    }
+    if (session!.role === "SUPER_ADMIN" && !submission.isSuperAdmin) {
+      return NextResponse.json({ error: "Submission Super Admin tidak ditemukan." }, { status: 404 });
     }
 
     await db.$transaction(async (tx) => {

@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
           asesmen: {
             include: {
               mapel: true,
-              submission: { where: { siswaId: session!.userId } },
+              submission: { where: { siswaId: session!.userId, isSuperAdmin: false } },
               _count: { select: { soal: true } },
             },
           },
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
         mapel: true,
         guru: { select: { id: true, nama: true } },
         kelasTujuan: { include: { kelas: { select: { id: true, judul: true } } } },
-        _count: { select: { soal: true, submission: true } },
+        _count: { select: { soal: true, submission: { where: { isSuperAdmin: false } } } },
       },
       orderBy: { updatedAt: "desc" },
     });
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    requireRole(session, ["GURU"]);
+    requireRole(session, ["GURU", "SUPER_ADMIN"]);
 
     const body = await req.json();
     const { judul, tipe, mapelId, durasiMenit, deskripsi, kelasIds = [] } = body;

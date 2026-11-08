@@ -19,6 +19,8 @@ async function getContext(asesmenId: string, submissionId: string, userId: strin
     include: {
       siswa: {
         select: {
+          id: true,
+          role: true,
           nama: true,
           nis: true,
           kelasReferensi: { select: { label: true } },
@@ -40,6 +42,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const isAdminTier = ADMIN_TIER.includes(session!.role);
     const context = await getContext(asesmenId, submissionId, session!.userId, isAdminTier);
     if ("error" in context) return NextResponse.json({ error: context.error }, { status: context.status });
+    if (context.submission.isSuperAdmin && (session!.role !== "SUPER_ADMIN" || context.submission.siswa.id !== session!.userId)) {
+      return NextResponse.json({ error: "Submission Super Admin tidak ditemukan." }, { status: 404 });
+    }
 
     const { asesmen, submission } = context;
     const soalList = await db.soal.findMany({ where: { asesmenId }, include: { opsi: { orderBy: { urutan: "asc" } } }, orderBy: { urutan: "asc" } });
@@ -101,7 +106,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     });
     const kelas = submission.siswa.kelasSiswa[0]?.kelas.judul ?? submission.siswa.kelasReferensi?.label ?? "-";
     const nilaiObjektif = totalObjektif ? Math.round(totalNilaiObjektif / totalObjektif) : 0;
-    return NextResponse.json({ data: { submissionId: submission.id, siswa: { nama: submission.siswa.nama, nis: submission.siswa.nis ?? "-", kelasJurusan: submission.siswa.kelasReferensi?.label ?? "-" }, asesmen: { judul: asesmen.judul, mapel: asesmen.mapel?.nama ?? null }, kelas, mulaiPada: submission.mulaiPada, submittedAt: submission.submittedAt, nilaiAkhir: submission.nilaiAkhir, rekap: { totalBenar, totalSalah, totalKosong, totalEssay, totalEssayBelumDinilai, totalObjektif, totalObjektifDijawab, totalEssayDijawab, totalRaguRagu, nilaiObjektif }, soal } });
+    return NextResponse.json({ data: { submissionId: submission.id, isSuperAdmin: submission.isSuperAdmin, siswa: { nama: submission.siswa.nama, nis: submission.siswa.nis ?? "-", kelasJurusan: submission.siswa.kelasReferensi?.label ?? "-" }, asesmen: { judul: asesmen.judul, mapel: asesmen.mapel?.nama ?? null }, kelas, mulaiPada: submission.mulaiPada, submittedAt: submission.submittedAt, nilaiAkhir: submission.nilaiAkhir, rekap: { totalBenar, totalSalah, totalKosong, totalEssay, totalEssayBelumDinilai, totalObjektif, totalObjektifDijawab, totalEssayDijawab, totalRaguRagu, nilaiObjektif }, soal } });
   } catch (err: unknown) {
     const name = err instanceof Error ? err.name : "";
     const message = err instanceof Error ? err.message : "Terjadi kesalahan.";
@@ -112,12 +117,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const session = await getSession();
-    requireRole(session, ["GURU"]);
+    requireRole(session, ["GURU", "SUPER_ADMIN"]);
     const { id: asesmenId, submissionId } = await params;
     const { jawabanSiswaId, nilaiSoal } = await req.json();
     if (!jawabanSiswaId || typeof nilaiSoal !== "number" || nilaiSoal < 0 || nilaiSoal > 100) return NextResponse.json({ error: "jawabanSiswaId dan nilaiSoal (0-100) wajib diisi." }, { status: 400 });
-    const context = await getContext(asesmenId, submissionId, session!.userId, false);
+    const context = await getContext(asesmenId, submissionId, session!.userId, session!.role === "SUPER_ADMIN");
     if ("error" in context) return NextResponse.json({ error: context.error }, { status: context.status });
+    if (context.submission.isSuperAdmin) {
+      return NextResponse.json({ error: "Jawaban Super Admin tidak dapat dinilai melalui daftar siswa." }, { status: 403 });
+    }
     const jawaban = await db.jawabanSiswa.findUnique({ where: { id: jawabanSiswaId }, include: { soal: true } });
     if (!jawaban || jawaban.submissionId !== submissionId || jawaban.soal.asesmenId !== asesmenId) return NextResponse.json({ error: "Jawaban tidak ditemukan pada submission ini." }, { status: 404 });
     if (jawaban.soal.tipe !== "ESSAY") return NextResponse.json({ error: "Hanya soal essay yang dinilai manual." }, { status: 400 });

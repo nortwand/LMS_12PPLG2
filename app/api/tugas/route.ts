@@ -8,19 +8,43 @@ export async function GET(req: NextRequest) {
     const session = await getSession();
     requireRole(session, ["GURU", "SISWA", ...ADMIN_TIER]);
 
-    if (session!.role === "GURU") {
+    if (session!.role === "GURU" || session!.role === "SUPER_ADMIN") {
       const kelasId = req.nextUrl.searchParams.get("kelasId");
       const tugasList = await db.tugas.findMany({
-        where: { guruId: session!.userId, kelasTujuan: kelasId ? { some: { kelasId } } : undefined },
+        where: {
+          guruId: session!.role === "GURU" ? session!.userId : undefined,
+          kelasTujuan: kelasId ? { some: { kelasId } } : undefined,
+        },
         include: {
           mapel: true,
           guru: { select: { id: true, nama: true, fotoProfil: true, role: true } },
           lampiran: true,
           kelasTujuan: { include: { kelas: { select: { id: true, judul: true } } } },
-          _count: { select: { submission: true } },
+          _count: { select: { submission: { where: { isSuperAdmin: false } } } },
         },
         orderBy: { createdAt: "desc" },
       });
+      if (session!.role === "SUPER_ADMIN") {
+        const submissionList = await db.tugasSubmission.findMany({
+          where: {
+            siswaId: session!.userId,
+            isSuperAdmin: true,
+            tugasId: { in: tugasList.map((tugas) => tugas.id) },
+          },
+          select: { tugasId: true, id: true, status: true, submittedAt: true },
+        });
+        const submissionByTask = new Map(submissionList.map((submission) => [submission.tugasId, submission]));
+        return NextResponse.json({
+          data: tugasList.map((tugas) => {
+            const ownSubmission = submissionByTask.get(tugas.id);
+            return {
+              ...tugas,
+              statusSubmission: ownSubmission?.status ?? "BELUM",
+              superAdminSubmission: ownSubmission ?? null,
+            };
+          }),
+        });
+      }
       return NextResponse.json({ data: tugasList });
     }
 
@@ -38,8 +62,8 @@ export async function GET(req: NextRequest) {
               mapel: true,
               guru: { select: { id: true, nama: true, fotoProfil: true } },
               lampiran: true,
-              submission: { where: { siswaId: session!.userId } },
-              _count: { select: { submission: true } },
+              submission: { where: { siswaId: session!.userId, isSuperAdmin: false } },
+              _count: { select: { submission: { where: { isSuperAdmin: false } } } },
             },
           },
         },
@@ -73,7 +97,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    requireRole(session, ["GURU"]);
+    requireRole(session, ["GURU", "SUPER_ADMIN"]);
     const body = await req.json();
     const { judul, isi, mapelId, kelasIds, lampiran } = body;
     const tugasBaru = await db.$transaction(async (tx) => {

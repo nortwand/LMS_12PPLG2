@@ -10,7 +10,7 @@ type Params = { params: Promise<{ id: string }> };
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const session = await getSession();
-    requireRole(session, ["SISWA"]);
+    requireRole(session, ["SISWA", "SUPER_ADMIN"]);
 
     const { id: asesmenId } = await params;
 
@@ -19,6 +19,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     });
     if (!submission) {
       return NextResponse.json({ error: "Anda belum memulai asesmen ini." }, { status: 404 });
+    }
+    if (submission.isSuperAdmin !== (session!.role === "SUPER_ADMIN")) {
+      return NextResponse.json({ error: "Jenis submission tidak sesuai dengan akun." }, { status: 403 });
     }
     if (submission.status === "SUDAH") {
       return NextResponse.json({ error: "Asesmen ini sudah pernah dikumpulkan." }, { status: 409 });

@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = requireRole(await getSession(), ["GURU"]);
+    const session = requireRole(await getSession(), ["GURU", "SUPER_ADMIN"]);
     const body = await req.json().catch(() => null);
     const judul = typeof body?.judul === "string" ? body.judul.trim() : "";
     const tipe = typeof body?.tipe === "string" ? body.tipe : "";
@@ -97,19 +97,21 @@ export async function POST(req: NextRequest) {
     const deskripsi = typeof body?.deskripsi === "string" ? body.deskripsi.trim() : null;
     const kelasIds = parseKelasIds(body?.kelasIds);
 
-    if (!judul || !TIPE_MATERI.includes(tipe as (typeof TIPE_MATERI)[number]) || !url || kelasIds.length === 0) {
-      return NextResponse.json({ error: "Judul, sumber, dan minimal 1 kelas tujuan wajib diisi." }, { status: 400 });
+    if (!judul || !TIPE_MATERI.includes(tipe as (typeof TIPE_MATERI)[number]) || !url || (session.role !== "SUPER_ADMIN" && kelasIds.length === 0)) {
+      return NextResponse.json({ error: "Judul dan sumber wajib diisi. Materi guru harus memiliki minimal 1 kelas tujuan." }, { status: 400 });
     }
     if (!isValidUrlForType(tipe, url)) {
       return NextResponse.json({ error: "URL tidak sesuai dengan tipe sumber materi." }, { status: 400 });
     }
 
-    const kelasDiampu = await db.kelasGuruMapel.findMany({
-      where: { guruId: session.userId, kelasId: { in: kelasIds } },
-      select: { kelasId: true },
-    });
-    if (kelasDiampu.length !== kelasIds.length) {
-      return NextResponse.json({ error: "Materi hanya dapat dibagikan ke kelas yang Anda ajar." }, { status: 403 });
+    if (session.role === "GURU") {
+      const kelasDiampu = await db.kelasGuruMapel.findMany({
+        where: { guruId: session.userId, kelasId: { in: kelasIds } },
+        select: { kelasId: true },
+      });
+      if (kelasDiampu.length !== kelasIds.length) {
+        return NextResponse.json({ error: "Materi hanya dapat dibagikan ke kelas yang Anda ajar." }, { status: 403 });
+      }
     }
 
     const materiBaru = await db.$transaction(async (tx) => {
@@ -123,9 +125,11 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      await tx.materiKelas.createMany({
-        data: kelasIds.map((kelasId: string) => ({ materiId: materi.id, kelasId })),
-      });
+      if (kelasIds.length > 0) {
+        await tx.materiKelas.createMany({
+          data: kelasIds.map((kelasId: string) => ({ materiId: materi.id, kelasId })),
+        });
+      }
 
       return materi;
     });

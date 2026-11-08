@@ -34,7 +34,7 @@ type Params = { params: Promise<{ id: string }> };
 // body: { judul?, url?, deskripsi?, kelasIds? } -> kelasIds kalau dikirim, replace semua assignment lama
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
-    const session = requireRole(await getSession(), ["GURU"]);
+    const session = requireRole(await getSession(), ["GURU", "SUPER_ADMIN"]);
 
     const { id } = await params;
     const body = await req.json().catch(() => null);
@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const existing = await db.materi.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: "Materi tidak ditemukan." }, { status: 404 });
-    if (existing.guruId !== session.userId) {
+    if (session.role !== "SUPER_ADMIN" && existing.guruId !== session.userId) {
       return NextResponse.json({ error: "Bukan materi milik anda." }, { status: 403 });
     }
 
@@ -55,10 +55,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!TIPE_MATERI.includes(nextTipe as (typeof TIPE_MATERI)[number]) || !isValidUrlForType(nextTipe, nextUrl)) {
       return NextResponse.json({ error: "Tipe atau URL sumber materi tidak valid." }, { status: 400 });
     }
-    if (kelasIds && kelasIds.length === 0) {
-      return NextResponse.json({ error: "Materi harus dibagikan ke minimal 1 kelas." }, { status: 400 });
+    if (kelasIds && kelasIds.length === 0 && session.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Materi guru harus dibagikan ke minimal 1 kelas." }, { status: 400 });
     }
-    if (kelasIds) {
+    if (kelasIds && session.role === "GURU") {
       const kelasDiampu = await db.kelasGuruMapel.findMany({
         where: { guruId: session.userId, kelasId: { in: kelasIds } },
         select: { kelasId: true },
@@ -99,12 +99,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 // DELETE /api/materi/[id] -> hapus materi
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
-    const session = requireRole(await getSession(), ["GURU"]);
+    const session = requireRole(await getSession(), ["GURU", "SUPER_ADMIN"]);
 
     const { id } = await params;
     const existing = await db.materi.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: "Materi tidak ditemukan." }, { status: 404 });
-    if (existing.guruId !== session.userId) {
+    if (session.role !== "SUPER_ADMIN" && existing.guruId !== session.userId) {
       return NextResponse.json({ error: "Bukan materi milik anda." }, { status: 403 });
     }
 

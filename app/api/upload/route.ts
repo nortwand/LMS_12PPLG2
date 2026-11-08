@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     const kategori = req.nextUrl.searchParams.get("kategori") ?? "profil";
-    if (kategori === "materi" && session.role !== "GURU") {
+    if (kategori === "materi" && session.role !== "GURU" && session.role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Hanya guru yang dapat mengunggah lampiran materi." }, { status: 403 });
     }
     const config = KATEGORI_CONFIG[kategori];

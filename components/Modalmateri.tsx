@@ -19,9 +19,10 @@ interface ModalMateriProps {
   mode: "create" | "edit";
   initialData?: MateriData | null;
   defaultKelasId?: string;
+  kelasOpsional?: boolean;
 }
 
-export default function ModalMateri({ open, onClose, onSuccess, mode, initialData, defaultKelasId }: ModalMateriProps) {
+export default function ModalMateri({ open, onClose, onSuccess, mode, initialData, defaultKelasId, kelasOpsional = false }: ModalMateriProps) {
   const [judul, setJudul] = useState("");
   const [tipe, setTipe] = useState<MateriData["tipe"]>("LINK");
   const [url, setUrl] = useState("");
@@ -88,7 +89,7 @@ export default function ModalMateri({ open, onClose, onSuccess, mode, initialDat
     e.preventDefault();
     setError("");
 
-    if (selectedKelasIds.length === 0) {
+    if (!kelasOpsional && selectedKelasIds.length === 0) {
       setError("Pilih minimal 1 kelas tujuan.");
       return;
     }
@@ -178,7 +179,9 @@ export default function ModalMateri({ open, onClose, onSuccess, mode, initialDat
         <Textarea label="Deskripsi (opsional)" value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} />
 
         <div>
-          <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">Kelas Tujuan</label>
+          <label className="mb-1.5 block text-xs font-semibold text-[var(--muted)]">
+            Kelas Tujuan{kelasOpsional ? " (opsional)" : ""}
+          </label>
           <select
             className="w-full rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--fg)] outline-none focus:border-[var(--brand)]"
             value=""
@@ -208,6 +211,11 @@ export default function ModalMateri({ open, onClose, onSuccess, mode, initialDat
                 );
               })}
             </div>
+          )}
+          {kelasOpsional && selectedKelasIds.length === 0 && (
+            <p className="mt-1.5 text-xs font-normal text-[var(--muted)]">
+              Materi dapat disimpan dulu dan dikirim ke kelas nanti melalui menu opsi materi.
+            </p>
           )}
         </div>
 

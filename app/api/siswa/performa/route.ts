@@ -38,11 +38,11 @@ export async function GET(req: NextRequest) {
     const [asesmenKelas, tugasKelas] = await Promise.all([
       db.asesmenKelas.findMany({
         where: { kelasId: { in: kelasIds }, ...(fromDate ? { asesmen: { createdAt: { gte: fromDate } } } : {}) },
-        select: { asesmen: { select: { id: true, judul: true, tipe: true, createdAt: true, mapel: { select: { nama: true } }, submission: { where: { siswaId }, select: { status: true, nilaiAkhir: true, submittedAt: true, jawaban: { select: { soal: { select: { tipe: true } }, nilaiSoal: true } } } } } } },
+        select: { asesmen: { select: { id: true, judul: true, tipe: true, createdAt: true, mapel: { select: { nama: true } }, submission: { where: { siswaId, isSuperAdmin: false }, select: { status: true, nilaiAkhir: true, submittedAt: true, jawaban: { select: { soal: { select: { tipe: true } }, nilaiSoal: true } } } } } } },
       }),
       db.tugasKelas.findMany({
         where: { kelasId: { in: kelasIds }, ...(fromDate ? { tugas: { createdAt: { gte: fromDate } } } : {}) },
-        select: { tugas: { select: { id: true, judul: true, createdAt: true, mapel: { select: { nama: true } }, submission: { where: { siswaId }, select: { status: true } } } } },
+        select: { tugas: { select: { id: true, judul: true, createdAt: true, mapel: { select: { nama: true } }, submission: { where: { siswaId, isSuperAdmin: false }, select: { status: true } } } } },
       }),
     ]);
 

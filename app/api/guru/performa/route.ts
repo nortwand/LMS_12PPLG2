@@ -36,7 +36,7 @@ function safeAverage(values: Array<number | null | undefined>): number {
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
-    requireRole(session, ["GURU"]);
+    requireRole(session, ["GURU", "SUPER_ADMIN"]);
 
     const rangeParam = req.nextUrl.searchParams.get("range") ?? "bulan";
     const range: RangeKey = ["semua", "minggu", "bulan", "3bulan", "tahun"].includes(rangeParam)
@@ -44,14 +44,7 @@ export async function GET(req: NextRequest) {
       : "bulan";
 
     const fromDate = getRangeStart(range);
-    const guruId = session!.userId;
-
-    const kelasGuruMapel = await db.kelasGuruMapel.findMany({
-      where: { guruId },
-      select: { kelasId: true },
-    });
-
-    const kelasIds = [...new Set(kelasGuruMapel.map((entry) => entry.kelasId))];
+    const guruId = session!.role === "GURU" ? session!.userId : undefined;
 
     const [kuisCount, ujianCount, kuisAvg, ujianAvg, semuaNilaiAvg, tugasDibuat, tugasDikumpulkan, essayBelumDinilai, classRows, mapelRows, tugasBelumDinilaiRaw, essayBelumDinilaiRaw] = await Promise.all([
       db.asesmen.count({
@@ -71,6 +64,7 @@ export async function GET(req: NextRequest) {
       db.submission.aggregate({
         where: {
           status: "SUDAH",
+          isSuperAdmin: false,
           nilaiAkhir: { not: null },
           asesmen: {
             guruId,
@@ -83,6 +77,7 @@ export async function GET(req: NextRequest) {
       db.submission.aggregate({
         where: {
           status: "SUDAH",
+          isSuperAdmin: false,
           nilaiAkhir: { not: null },
           asesmen: {
             guruId,
@@ -95,6 +90,7 @@ export async function GET(req: NextRequest) {
       db.submission.aggregate({
         where: {
           status: "SUDAH",
+          isSuperAdmin: false,
           nilaiAkhir: { not: null },
           asesmen: {
             guruId,
@@ -112,6 +108,7 @@ export async function GET(req: NextRequest) {
       db.tugasSubmission.count({
         where: {
           tugas: { guruId, createdAt: { gte: fromDate } },
+          isSuperAdmin: false,
           status: "SUDAH",
         },
       }),
@@ -125,7 +122,7 @@ export async function GET(req: NextRequest) {
               createdAt: { gte: fromDate },
             },
           },
-          submission: { status: "SUDAH" },
+          submission: { status: "SUDAH", isSuperAdmin: false },
         },
       }),
       db.asesmen.findMany({
@@ -144,6 +141,7 @@ export async function GET(req: NextRequest) {
           submission: {
             where: {
               status: "SUDAH",
+              isSuperAdmin: false,
               nilaiAkhir: { not: null },
             },
             select: { nilaiAkhir: true },
@@ -162,6 +160,7 @@ export async function GET(req: NextRequest) {
           submission: {
             where: {
               status: "SUDAH",
+              isSuperAdmin: false,
               nilaiAkhir: { not: null },
             },
             select: { nilaiAkhir: true },
@@ -171,6 +170,7 @@ export async function GET(req: NextRequest) {
       db.tugasSubmission.findMany({
         where: {
           tugas: { guruId, createdAt: { gte: fromDate } },
+          isSuperAdmin: false,
           status: "SUDAH",
         },
         select: {
@@ -195,7 +195,7 @@ export async function GET(req: NextRequest) {
               createdAt: { gte: fromDate },
             },
           },
-          submission: { status: "SUDAH" },
+          submission: { status: "SUDAH", isSuperAdmin: false },
         },
         select: {
           submission: {

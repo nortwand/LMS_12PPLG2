@@ -30,13 +30,14 @@ export interface PengumumanData {
 interface PengumumanCardProps {
   data: PengumumanData;
   currentUserId: string;
+  canManage?: boolean;
   onEdit?: (data: PengumumanData) => void;
   onDelete?: (id: string) => void;
   onSend?: (data: PengumumanData) => void;
 }
 
-export default function PengumumanCard({ data, currentUserId, onEdit, onDelete, onSend }: PengumumanCardProps) {
-  const isOwner = data.author.id === currentUserId;
+export default function PengumumanCard({ data, currentUserId, canManage = false, onEdit, onDelete, onSend }: PengumumanCardProps) {
+  const isOwner = canManage || data.author.id === currentUserId;
   const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {

@@ -19,9 +19,10 @@ interface MateriCardProps {
   isEditable?: boolean;
   onEdit?: (materi: MateriData) => void;
   onDelete?: (id: string) => void;
+  onSend?: (materi: MateriData) => void;
 }
 
-export default function MateriCard({ data, isEditable = false, onEdit, onDelete }: MateriCardProps) {
+export default function MateriCard({ data, isEditable = false, onEdit, onDelete, onSend }: MateriCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const attachmentName = (() => {
     if (data.tipe === "LINK") {
@@ -70,7 +71,12 @@ export default function MateriCard({ data, isEditable = false, onEdit, onDelete 
                 ⋯
               </button>
               {menuOpen && (
-                <div className="absolute right-0 top-8 z-20 w-28 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)] py-1 shadow-lg">
+                <div className="absolute right-0 top-8 z-20 w-32 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)] py-1 shadow-lg">
+                  {onSend && (
+                    <button type="button" onClick={() => { setMenuOpen(false); onSend(data); }} className="block h-9 w-full px-3 text-left text-xs font-medium hover:bg-[var(--tint)]">
+                      Kirim ke
+                    </button>
+                  )}
                   <button type="button" onClick={() => { setMenuOpen(false); onEdit?.(data); }} className="block h-9 w-full px-3 text-left text-xs font-medium hover:bg-[var(--tint)]">
                     Edit
                   </button>

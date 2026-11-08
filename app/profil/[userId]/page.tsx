@@ -9,7 +9,7 @@ import Badge from "@/components/ui/Badge";
 import ModalEditProfil from "@/components/ModalEditProfil";
 import { Avatar, Btn, PANEL, STYLES, ThemeToggle } from "@/app/guru/_ui";
 
-type Role = "ADMIN" | "KEPSEK" | "KURIKULUM" | "GURU" | "SISWA";
+type Role = "SUPER_ADMIN" | "ADMIN" | "KEPSEK" | "KURIKULUM" | "GURU" | "SISWA";
 
 interface ProfilData {
   id: string;
@@ -27,6 +27,7 @@ interface ProfilData {
 }
 
 const roleLabel: Record<Role, string> = {
+  SUPER_ADMIN: "Super Admin",
   ADMIN: "Admin",
   KEPSEK: "Kepsek",
   KURIKULUM: "Kurikulum",
@@ -158,12 +159,14 @@ export default function ProfilPage() {
   }
 
   function navigateAdminTab(tab: AdminTab) {
-    router.push(`/admin?tab=${tab}`);
+    router.push(`/${me?.role === "SUPER_ADMIN" ? "super-admin" : "admin"}?tab=${tab}`);
   }
 
   const dashboardLabel = me
     ? me.role === "ADMIN"
       ? "Dashboard Admin"
+      : me.role === "SUPER_ADMIN"
+      ? "Dashboard Super Admin"
       : me.role === "KEPSEK"
       ? "Dashboard Kepsek"
       : me.role === "KURIKULUM"
@@ -232,13 +235,13 @@ export default function ProfilPage() {
             <span className="text-[var(--link)]">- Profile</span>
           </p>
           <nav className="flex flex-col gap-1">
-            {me?.role === "ADMIN" && (
+            {(me?.role === "ADMIN" || me?.role === "SUPER_ADMIN") && (
               <>
                 <div className="mb-3 flex items-center gap-3 rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                   <Avatar src={me?.fotoProfil} nama={me?.nama} />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{me?.nama}</p>
-                    <p className="text-xs text-[var(--muted)]">Admin</p>
+                    <p className="text-xs text-[var(--muted)]">{me.role === "SUPER_ADMIN" ? "Super Admin" : "Admin"}</p>
                   </div>
                 </div>
                 {ADMIN_TABS.map((tab) => (

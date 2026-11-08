@@ -14,6 +14,12 @@ interface LampiranTugas {
   judul: string | null;
   thumbnail: string | null;
 }
+interface OwnSubmissionData {
+  id: string;
+  status: string;
+  lampiran: SubmissionLampiran[];
+  submittedAt: string | null;
+}
 interface Author {
   id: string;
   nama: string;
@@ -32,6 +38,7 @@ export interface TugasData {
   lampiran: LampiranTugas[];
   kelasTujuan?: { kelas: { id: string; judul: string } }[];
   statusSubmission?: "BELUM" | "SUDAH"; // khusus response buat siswa
+  superAdminSubmission?: { id: string; status: string; submittedAt: string | null } | null;
   _count?: { submission: number };
 }
 
@@ -51,7 +58,7 @@ interface SubmissionData {
 interface TugasCardProps {
   data: TugasData;
   currentUserId: string;
-  role: "GURU" | "SISWA" | "ADMIN" | "KEPSEK" | "KURIKULUM";
+  role: "SUPER_ADMIN" | "GURU" | "SISWA" | "ADMIN" | "KEPSEK" | "KURIKULUM";
   onSubmissionChanged?: () => void;
   onEdit?: (tugas: TugasData) => void;
   onDelete?: (id: string) => void;
@@ -63,6 +70,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
   const [expanded, setExpanded] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [submissions, setSubmissions] = useState<SubmissionData[] | null>(null);
+  const [ownSubmission, setOwnSubmission] = useState<OwnSubmissionData | null>(null);
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
   const [uploading, setUploading] = useState(false);
@@ -84,7 +92,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
   const [editingSubmission, setEditingSubmission] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<"BELUM" | "SUDAH">(data.statusSubmission ?? "BELUM");
 
-  const isOwner = role === "GURU" && data.guru.id === currentUserId;
+  const isOwner = role === "SUPER_ADMIN" || (role === "GURU" && data.guru.id === currentUserId);
 
   function isImageUrl(url: string) {
     return /\.(png|jpe?g|gif|webp|bmp|svg)(?:[?#]|$)/i.test(url);
@@ -96,6 +104,11 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
       const res = await fetch(`/api/tugas/${data.id}`);
       const json = await res.json();
       setSubmissions(json.data?.submission ?? []);
+      if (role === "SUPER_ADMIN") {
+        const submission = json.data?.mySuperAdminSubmission ?? null;
+        setOwnSubmission(submission);
+        setSubmissionStatus(submission?.status === "SUDAH" ? "SUDAH" : "BELUM");
+      }
     } catch {}
     setLoadingDetail(false);
   }
@@ -139,9 +152,11 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
   }
 
   function handleEditSubmission() {
-    const ownSubmission = submissions?.find((submission) => submission.siswa.id === currentUserId);
-    if (!ownSubmission) return;
-    setPendingLampiran(ownSubmission.lampiran.map((lampiran) => ({ tipe: lampiran.tipe, url: lampiran.url, judul: lampiran.judul ?? undefined })));
+    const submission = role === "SUPER_ADMIN"
+      ? ownSubmission
+      : submissions?.find((item) => item.siswa.id === currentUserId);
+    if (!submission) return;
+    setPendingLampiran(submission.lampiran.map((lampiran) => ({ tipe: lampiran.tipe, url: lampiran.url, judul: lampiran.judul ?? undefined })));
     setEditingSubmission(true);
   }
 
@@ -151,7 +166,8 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
     try {
       const res = await fetch(`/api/tugas/${data.id}/kirim-ke-kelas/submit`, { method: "DELETE" });
       if (res.ok) {
-        setSubmissions((prev) => prev?.filter((submission) => submission.siswa.id !== currentUserId) ?? []);
+        if (role === "SUPER_ADMIN") setOwnSubmission(null);
+        else setSubmissions((prev) => prev?.filter((submission) => submission.siswa.id !== currentUserId) ?? []);
         setPendingLampiran([]);
         setEditingSubmission(false);
         setSubmissionStatus("BELUM");
@@ -233,7 +249,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
             )}
           </div>
         )}
-        {role === "SISWA" && (
+        {(role === "SISWA" || role === "SUPER_ADMIN") && (
           <Badge tone={submissionStatus === "SUDAH" ? "green" : "red"}>
             {submissionStatus === "SUDAH" ? "Sudah Dikerjakan" : "Belum Dikerjakan"}
           </Badge>
@@ -289,7 +305,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
           {loadingDetail && <p className="text-xs text-[var(--muted)]">Memuat...</p>}
 
           {/* upload jawaban -- cuma siswa, cuma lampiran (file/link), gak ada input teks */}
-          {role === "SISWA" && (
+          {(role === "SISWA" || role === "SUPER_ADMIN") && (
             <div className="rounded-lg border border-dashed border-[var(--border-strong)] p-3">
               <p className="mb-2 text-xs font-semibold text-[var(--fg)]">{editingSubmission ? "Edit Jawaban Tugas" : "Jawab Tugas (lampirkan file/pdf/link)"}</p>
               <div className="flex flex-wrap items-center gap-2">
@@ -355,6 +371,28 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
           )}
 
           {/* daftar semua jawaban -- visible ke sekelas, beda dari Asesmen yang private */}
+          {role === "SUPER_ADMIN" && ownSubmission && (
+            <div className="rounded-lg border border-[var(--brand)] bg-[var(--tint)] p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold">Submission milik akun Super Admin</p>
+                  {ownSubmission.submittedAt && <p className="mt-1 text-[11px] text-[var(--muted)]">Dikumpulkan {new Date(ownSubmission.submittedAt).toLocaleString("id-ID")}</p>}
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={handleEditSubmission}>Edit</Button>
+                  <Button size="sm" variant="outline" disabled={submitting} onClick={() => void handleDeleteSubmission()}>Hapus</Button>
+                </div>
+              </div>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {ownSubmission.lampiran.map((lampiran) => (
+                  <a key={lampiran.id} href={lampiran.url} target="_blank" rel="noopener noreferrer" className="truncate rounded-md border border-[var(--border)] bg-[var(--surface)] p-2 text-xs text-[var(--link)] hover:underline">
+                    {lampiran.judul || lampiran.url}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           {submissions?.map((s) => (
             <div key={s.id} className="flex items-start gap-2">
               <button
@@ -369,7 +407,7 @@ export default function TugasCard({ data, currentUserId, role, onSubmissionChang
                 )}
               </button>
               <div className="relative flex-1 rounded-lg bg-[var(--surface)] p-2.5" data-options-menu>
-                {(role === "GURU" || (role === "SISWA" && s.siswa.id === currentUserId)) && (
+                {(role === "GURU" || role === "SUPER_ADMIN" || (role === "SISWA" && s.siswa.id === currentUserId)) && (
                   <div className="absolute right-2 top-2" data-options-menu>
                     <button
                       type="button"

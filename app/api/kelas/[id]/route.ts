@@ -55,7 +55,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
             include: {
               mapel: true,
               guru: { select: { id: true, nama: true, fotoProfil: true } },
-              submission: session.role === "SISWA" ? { where: { siswaId: session.userId }, select: { status: true } } : undefined,
+              submission: {
+                where: session.role === "SISWA"
+                  ? { siswaId: session.userId, isSuperAdmin: false }
+                  : { isSuperAdmin: false },
+                select: { status: true },
+              },
               _count: { select: { soal: true } },
             },
           },
@@ -71,8 +76,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
               guru: { select: { id: true, nama: true, fotoProfil: true } },
               lampiran: true,
               kelasTujuan: { include: { kelas: { select: { id: true, judul: true } } } },
-              submission: session.role === "SISWA" ? { where: { siswaId: session.userId }, select: { status: true } } : undefined,
-              _count: { select: { submission: true } },
+              submission: {
+                where: session.role === "SISWA"
+                  ? { siswaId: session.userId, isSuperAdmin: false }
+                  : { isSuperAdmin: false },
+                select: { status: true },
+              },
+              _count: { select: { submission: { where: { isSuperAdmin: false } } } },
             },
           },
         },
@@ -89,6 +99,20 @@ export async function GET(_req: NextRequest, { params }: Params) {
         },
       }),
     ]);
+    const superAdminTaskSubmissionList =
+      session.role === "SUPER_ADMIN" && tugasKelasList.length > 0
+        ? await db.tugasSubmission.findMany({
+            where: {
+              siswaId: session.userId,
+              tugasId: { in: tugasKelasList.map((item) => item.tugasId) },
+              isSuperAdmin: true,
+            },
+            select: { tugasId: true, status: true },
+          })
+        : [];
+    const superAdminTaskStatus = new Map(
+      superAdminTaskSubmissionList.map((submission) => [submission.tugasId, submission.status]),
+    );
 
     const feedPengumuman = pengumumanList.map((p) => ({
       tipe: "PENGUMUMAN" as const,
@@ -111,6 +135,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
       data: {
         ...tk.tugas,
         ...(session.role === "SISWA" && { statusSubmission: tk.tugas.submission[0]?.status ?? "BELUM" }),
+        ...(session.role === "SUPER_ADMIN" && {
+          statusSubmission: superAdminTaskStatus.get(tk.tugas.id) ?? "BELUM",
+        }),
       },
     }));
 

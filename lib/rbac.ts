@@ -1,13 +1,13 @@
 import type { SessionPayload } from "./auth"; // type-only -> gak ikut ke-bundle bcryptjs/next-headers ke edge
 
-export type Role = "ADMIN" | "KEPSEK" | "KURIKULUM" | "GURU" | "SISWA";
+export type Role = "SUPER_ADMIN" | "ADMIN" | "KEPSEK" | "KURIKULUM" | "GURU" | "SISWA";
 
 // ============================
 // GRUP ROLE (biar gampang cek "termasuk admin-tier" dsb)
 // ============================
-export const ADMIN_TIER: Role[] = ["ADMIN", "KEPSEK", "KURIKULUM"];
+export const ADMIN_TIER: Role[] = ["SUPER_ADMIN", "ADMIN", "KEPSEK", "KURIKULUM"];
 export const READ_ONLY_ADMIN_TIER: Role[] = ["KEPSEK", "KURIKULUM"]; // gak bisa CRUD, cuma liat + generate nilai
-export const FULL_CRUD_ADMIN: Role[] = ["ADMIN"]; // cuma admin asli yang bisa CRUD kelas/akun
+export const FULL_CRUD_ADMIN: Role[] = ["SUPER_ADMIN", "ADMIN"];
 
 // ============================
 // MAP: route prefix -> role yang boleh akses
@@ -15,6 +15,7 @@ export const FULL_CRUD_ADMIN: Role[] = ["ADMIN"]; // cuma admin asli yang bisa C
 // -> single source of truth, jangan didefinisikan ulang di tempat lain
 // ============================
 export const ROUTE_ACCESS: Record<string, Role[]> = {
+  "/super-admin": ["SUPER_ADMIN"],
   "/admin": ["ADMIN"],
   "/kepsek": ["KEPSEK"],
   "/kurikulum": ["KURIKULUM"],
@@ -48,6 +49,8 @@ export function isFullAdmin(session: SessionPayload | null): boolean {
 // dan juga dipake di proxy.ts buat redirect kalau role gak sesuai route
 export function getDashboardPath(role: Role): string {
   switch (role) {
+    case "SUPER_ADMIN":
+      return "/super-admin";
     case "ADMIN":
       return "/admin";
     case "KEPSEK":

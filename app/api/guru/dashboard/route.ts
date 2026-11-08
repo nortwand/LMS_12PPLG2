@@ -17,11 +17,11 @@ export async function GET() {
       }),
       db.asesmen.count({ where: { guruId } }),
       db.tugas.count({ where: { guruId } }),
-      db.submission.count({ where: { asesmen: { guruId }, status: "SUDAH", nilaiAkhir: { not: null } } }),
-      db.jawabanSiswa.count({ where: { soal: { asesmen: { guruId }, tipe: "ESSAY" }, nilaiSoal: null, submission: { status: "SUDAH" } } }),
-      db.tugasSubmission.count({ where: { tugas: { guruId }, status: "SUDAH" } }),
+      db.submission.count({ where: { asesmen: { guruId }, isSuperAdmin: false, status: "SUDAH", nilaiAkhir: { not: null } } }),
+      db.jawabanSiswa.count({ where: { soal: { asesmen: { guruId }, tipe: "ESSAY" }, nilaiSoal: null, submission: { status: "SUDAH", isSuperAdmin: false } } }),
+      db.tugasSubmission.count({ where: { tugas: { guruId }, isSuperAdmin: false, status: "SUDAH" } }),
       db.asesmen.findMany({ where: { guruId }, select: { id: true, judul: true, tipe: true, status: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 5 }),
-      db.tugas.findMany({ where: { guruId }, select: { id: true, judul: true, createdAt: true, _count: { select: { submission: true } } }, orderBy: { createdAt: "desc" }, take: 5 }),
+      db.tugas.findMany({ where: { guruId }, select: { id: true, judul: true, createdAt: true, _count: { select: { submission: { where: { isSuperAdmin: false } } } } }, orderBy: { createdAt: "desc" }, take: 5 }),
     ]);
 
     const siswaIds = await db.kelasSiswa.findMany({

@@ -179,7 +179,7 @@ export default function ModalBuatAsesmen({ open, onClose, onSuccess, defaultKela
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={fixedTipe === "KUIS" ? "Buat Quiz" : fixedTipe === "UJIAN" ? "Buat Ujian Online" : "Buat Asesmen"} maxWidth="max-w-lg">
+    <Modal open={open} onClose={onClose} title={initialSumber === "EXISTING" ? "Kirim Asesmen ke Kelas" : fixedTipe === "KUIS" ? "Buat Quiz" : fixedTipe === "UJIAN" ? "Buat Ujian Online" : "Buat Asesmen"} maxWidth="max-w-lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* toggle sumber - cuma tampil kalau ada asesmen existing yang bisa dipilih */}
         {showSourceToggle && asesmenExistingList.length > 0 && (
