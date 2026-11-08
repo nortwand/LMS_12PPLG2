@@ -145,6 +145,7 @@ export default function LoginPage() {
   const [portal, setPortal] = useState<Portal>("ADMIN");
   const [loginIdentifier, setLoginIdentifier] = useState(""); // email (admin) / nik (petugas) / nis (siswa)
   const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // ===== state lupa password =====
   const [identifier, setIdentifier] = useState(""); // NIS/NIK
@@ -175,6 +176,7 @@ export default function LoginPage() {
     setPortal(newPortal);
     setLoginIdentifier("");
     setLoginPassword("");
+    setShowLoginPassword(false);
     setError("");
   }
 
@@ -373,16 +375,44 @@ export default function LoginPage() {
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
                 />
-                <Field
-                  id="login-password"
-                  label="Password"
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  placeholder="Password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                />
+                <div>
+                  <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="login-password"
+                      className={`${INPUT} pr-12`}
+                      type={showLoginPassword ? "text" : "password"}
+                      required
+                      autoComplete="current-password"
+                      placeholder="Password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      aria-label={showLoginPassword ? "Sembunyikan password" : "Tampilkan password"}
+                      aria-pressed={showLoginPassword}
+                      onClick={() => setShowLoginPassword((visible) => !visible)}
+                      className="absolute inset-y-0 right-0 flex w-11 cursor-pointer items-center justify-center rounded-r-md text-[var(--muted)] hover:text-[var(--fg)]"
+                    >
+                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                        {showLoginPassword ? (
+                          <>
+                            <path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                            <path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c5 0 8.5 4.5 9.5 7-.4 1-1.1 2-2 2.9M6.2 6.2C3.9 7.6 2.7 9.6 2.5 12c.5 1.3 1.5 2.8 3.2 4.1A10.2 10.2 0 0 0 12 18c1 0 2-.2 2.9-.5" />
+                          </>
+                        ) : (
+                          <>
+                            <path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z" />
+                            <circle cx="12" cy="12" r="2.5" />
+                          </>
+                        )}
+                      </svg>
+                    </button>
+                  </div>
+                </div>
 
                 <ErrorText message={error} />
 
